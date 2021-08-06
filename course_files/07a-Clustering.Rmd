@@ -198,6 +198,7 @@ adjustedRandIndex(colData(deng)$cell_type2, colData(deng)$sc3_10_clusters)
 __Note__ `SC3` can also be run in an interactive `Shiny` session:
 
 ```{r clustering14, eval=FALSE}
+### LOADS BROWSER BUT COULDN'T ACCESS
 sc3_interactive(deng)
 ```
 

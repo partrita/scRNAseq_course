@@ -14,7 +14,7 @@ __[https://www.singlecellcourse.org](https://www.singlecellcourse.org)__
 
 #### Data
 
-__[https://singlecellcourse.cog.sanger.ac.uk/index.html?shared=data/](https://singlecellcourse.cog.sanger.ac.uk/index.html?shared=data/)__
+__[https://singlecellcourse.cog.sanger.ac.uk/data/](https://singlecellcourse.cog.sanger.ac.uk/data/)__
 
 ## Video
 
@@ -34,7 +34,7 @@ Please follow this link and register for the __"Analysis of single cell RNA-seq 
 
 ## Docker image
 
-[![Docker Repository on Quay](https://quay.io/repository/hemberg-group/scrna-seq-course/status "Docker Repository on Quay")](https://quay.io/repository/cellgeni/scrna-seq-course)
+[![Docker Repository on Quay](https://quay.io/repository/cellgeni/scrna-seq-course/status "Docker Repository on Quay")](https://quay.io/repository/cellgeni/scrna-seq-course)
 
 The course can be reproduced without any package installation by running the course docker image which contains all the required packages.
 

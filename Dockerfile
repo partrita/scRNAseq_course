@@ -3,20 +3,12 @@ FROM jupyter/base-notebook
 # versions of software
 ARG r_cran_version="cran40"
 ARG rstudio_version="1.2.5019"
-ARG fastqc_version="0.11.9"            
-ARG kallisto_version="0.46.2"          
-ARG samtools_version="1.11"            
-ARG trimgalore_version="0.6.6"         
-ARG bedtools_version="2.29.2"           
-ARG featurecounts_version="2.0.1"       
-
-#old software verions
-#fastqc=0.11.5
-#kallisto=0.43.1
-#samtools=1.9
-#trimgalore=0.4.5
-#bedtools=2.27.1
-#featurecounts=1.5.1
+ARG fastqc_version="0.11.9"
+ARG kallisto_version="0.46.2"
+ARG samtools_version="1.11"
+ARG trimgalore_version="0.6.6"
+ARG bedtools_version="2.29.2"
+ARG featurecounts_version="2.0.1"
 
 USER root
 
@@ -165,6 +157,8 @@ RUN pip install --upgrade --no-cache \
 
 # JupyterLab extension to launch registered applications in the python package
 RUN jupyter labextension install @jupyterlab/server-proxy
+
+RUN conda clean --all --yes
 
 # fix permissions
 RUN fix-permissions $CONDA_DIR && \
