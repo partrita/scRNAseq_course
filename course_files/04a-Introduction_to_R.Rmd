@@ -43,17 +43,19 @@ Bioconductor is a repository of R-packages specifically for biological analyses.
 
 
 ```{r Intro-R4, eval=FALSE}
-source("https://bioconductor.org/biocLite.R")
-biocLite("edgeR")
-```
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("edgeR")
 
-Note: in some situations it is necessary to substitute "http://" for "https://" in the above depending on the security features of your internet connection/network. 
+```
 
 Bioconductor also requires creators to support their packages and has a regular 6-month release schedule. Make sure you are using the most recent release of bioconductor before trying to install packages for the course.
 
 ```{r Intro-R5, eval=FALSE}
-source("https://bioconductor.org/biocLite.R")
-biocLite("BiocUpgrade")
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install()
+
 ```
 
 ### Source
