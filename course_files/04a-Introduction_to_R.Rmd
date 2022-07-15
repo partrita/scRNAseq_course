@@ -13,9 +13,9 @@ opts_chunk$set(cache= TRUE, out.width='90%', fig.align = 'center')
 
 ### CRAN
 
-The Comprehensive R Archive Network [CRAN](https://cran.r-project.org/) is the biggest archive of R packages. There are few requirements for uploading packages besides building and installing succesfully, hence documentation and support is often minimal and figuring how to use these packages can be a challenge it itself. CRAN is the default repository R will search to find packages to install:
+The Comprehensive R Archive Network [CRAN](https://cran.r-project.org/) is the biggest archive of R packages. There are few requirements for uploading packages besides building and installing successfully, hence documentation and support is often minimal and figuring how to use these packages can be a challenge it itself. CRAN is the default repository R will search to find packages to install:
 
-```{r Intro-R1, eval=FALSE}
+```{r Intro-R1-1, eval=FALSE}
 install.packages("devtools")
 require("devtools")
 ```
@@ -24,13 +24,13 @@ require("devtools")
 
 [Github](https://github.com/) isn't specific to R, any code of any type in any state can be uploaded. There is no guarantee a package uploaded to github will even install, nevermind do what it claims to do. R packages can be downloaded and installed directly from github using the "devtools" package installed above.
 
-```{r Intro-R2, eval=FALSE}
+```{r Intro-R1-2, eval=FALSE}
 devtools::install_github("tallulandrews/M3Drop")
 ```
 
 Github is also a version control system which stores multiple versions of any package. By default the most recent "master" version of the package is installed. If you want an older version or the development branch this can be specified using the "ref" parameter:
 
-```{r Intro-R3, eval=FALSE}
+```{r Intro-R1-3, eval=FALSE}
 # different branch
 devtools::install_github("tallulandrews/M3D", ref="nbumi")
 # previous commit
@@ -42,7 +42,7 @@ Note: make sure you re-install the M3Drop master branch for later in the course.
 Bioconductor is a repository of R-packages specifically for biological analyses. It has the strictest requirements for submission, including installation on every platform and full documentation with a tutorial (called a vignette) explaining how the package should be used. Bioconductor also encourages utilization of standard data structures/classes and coding style/naming conventions, so that, in theory, packages and analyses can be combined into large pipelines or workflows. 
 
 
-```{r Intro-R4, eval=FALSE}
+```{r Intro-R1-4, eval=FALSE}
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("edgeR")
@@ -61,234 +61,513 @@ BiocManager::install()
 ### Source
 The final way to install packages is directly from source. In this case you have to download a fully built source code file, usually packagename.tar.gz, or clone the github repository and rebuild the package yourself. Generally this will only be done if you want to edit a package yourself, or if for some reason the former methods have failed.
 
-```{r Intro-R6, eval=FALSE}
+```{r Intro-R1-5, eval=FALSE}
 install.packages("M3Drop_3.05.00.tar.gz", type="source")
 ```
 
 ## Installation instructions:
 All the packages necessary for this course are available [here](https://github.com/hemberg-lab/scRNA.seq.course/blob/master/Dockerfile). Starting from "RUN Rscript -e "install.packages('devtools')" ", run each of the commands (minus "RUN") on the command line or start an R session and run each of the commands within the quotation marks. Note the ordering of the installation is important in some cases, so make sure you run them in order from top to bottom. 
 
-## Data-types/classes
+## Data types
+As most of programming languages, R uses variables to store the data. The variable can be created by typing its name, assignment operator (`=` or `<-` that are mostly identical) and value:
 
-R is a high level language so the underlying data-type is generally not important. The exception if you are accessing R data directly using another language such as C, but that is beyond the scope of this course. Instead we will consider the basic data classes: numeric, integer, logical, and character, and the higher level data class called "factor". You can check what class your data is using the "class()" function.
-
-Aside: R can also store data as "complex" for complex numbers but generally this isn't relevant for biological analyses.
-
-### Numeric
-
-The "numeric" class is the default class for storing any numeric data - integers, decimal numbers, numbers in scientific notation, etc... 
-
-```{r Intro-R7}
-x = 1.141
-class(x)
-y = 42
-class(y)
-z = 6.02e23
-class(z)
+```{r Intro-R2-1}
+var = 10
+# just type variable name to print it
+var
 ```
+we created variable named `var` that stores numerical value `10`.
 
-Here we see that even though R has an "integer" class and 42 could be stored more efficiently as an integer the default is to store it as "numeric". If we want 42 to be stored as an integer we must "coerce" it to that class:
-
-```{r Intro-R8}
-y = as.integer(42)
-class(y)
-```
-
-
-Coercion will force R to store data as a particular class, if our data is incompatible with that class it will still do it but the data will be converted to NAs:
-
-```{r Intro-R9}
-as.numeric("H")
-```
-
-Above we tried to coerce "character" data, identified by the double quotation marks, into numeric data which doesn't make sense, so we triggered ("threw") an warning message. Since this is only a warning R would continue with any subsequent commands in a script/function, whereas an "error" would cause R to halt. 
-
-### Character/String
-
-The "character" class stores all kinds of text data. Programing convention calls data containing multiple letters a "string", thus most R functions which act on character data will refer to the data as "strings" and will often have "str" or "string" in it's name. Strings are identified by being flanked by double quotation marks, whereas variable/function names are not:
-```{r Intro-R10}
-x = 5
-
-a = "x" # character "x"
-a
-
-b = x # variable x
-b
-```
-
-In addition to standard alphanumeric characters, strings can also store various special characters. Special characters are identified using a backlash followed by a single character, the most relevant are the special character for tab : `\t` and new line : `\n`. To demonstrate the these special characters lets concatenate (cat) together two strings with these characters separating (sep) them:
-```{r Intro-R11}
-cat("Hello", "World", sep= " ")
-
-cat("Hello", "World", sep= "\t")
-
-cat("Hello", "World", sep= "\n")
-```
-Note that special characters work differently in different functions. For instance the `paste` function does the same thing as `cat` but does not recognize special characters.
-
-```{r Intro-R12}
-paste("Hello", "World", sep= " ")
-
-paste("Hello", "World", sep= "\t")
-
-paste("Hello", "World", sep= "\n")
-```
-
-Single or double backslash is also used as an `escape` character to turn off special characters or allow quotation marks to be included in strings:
-
-```{r Intro-R13}
-cat("This \"string\" contains quotation marks.")
-```
-
-Special characters are generally only used in pattern matching, and reading/writing data to files. For instance this is how you would read a tab-separated file into R.
-```{r Intro-R14, eval=FALSE}
-dat = read.delim("file.tsv", sep="\t")
-```
-
-Another special type of character data are colours. Colours can be specified in three main ways: by name from those [available](http://bxhorn.com/r-color-tables/), by red, green, blue values using the `rgb` function, and by hue (colour), saturation (colour vs white) and value (colour/white vs black) using the `hsv` function. By default rgb and hsv expect three values in 0-1 with an optional fourth value for transparency. Alternatively, sets of predetermined colours with useful properties can be loaded from many different packages with [RColorBrewer](http://colorbrewer2.org/) being one of the most popular.
-
-```{r Intro-R15}
-reds = c("red", rgb(1,0,0), hsv(0, 1, 1))
-reds
-barplot(c(1,1,1), col=reds, names=c("by_name", "by_rgb", "by_hsv"))
-```
+R variables might be of various types. There are more than 20 types in total, but normally only few of them are used directly: logical, integer, numeric, character, list, and S4. The former four represents atomic vectors that are simple data structures with values of one type. Lists and S4 variables allow to store more sophisticated data structures. Type of variable can be accessed using `typeof` function. Lets discuss atomic vectors first. 
 
 ### Logical
 
-The `logical` class stores boolean truth values, i.e. TRUE and FALSE. It is used for storing the results of logical operations and conditional statements will be coerced to this class. Most other data-types can be coerced to boolean without triggering (or "throwing") error messages, which may cause unexpected behaviour.
+The `logical` type stores Boolean values, i.e. TRUE and FALSE. It is used for storing the results of logical operations and conditional statements will be coerced to this type.
 
-```{r Intro-R16}
+```{r Intro-R2-2}
+# everything after '#' sign in the line is comment, R will not try to interpret it
 x = TRUE
-class(x)
-
-y = "T"
-as.logical(y)
-
-z = 5
-as.logical(z)
-
-x = FALSE
-class(x)
-
-y = "F"
-as.logical(y)
-
-z = 0
-as.logical(z)
+typeof(x)
+is.logical(x)
+x = 2 > 3
+x
 ```
+
+R has all usual logical operators
+```{r Intro-R2-3}
+# not
+x = TRUE
+!x
+!(2 > 3)
+# or (true if one of operands is true)
+TRUE | FALSE
+!x | (2 > 3)
+# and (true if both of operands are true)
+x & FALSE
+x & TRUE
+```
+
+### Numeric and integer
+
+The `numeric` type is used to store decimal numbers.  
+
+```{r Intro-R2-4}
+x = 1.141
+typeof(x)
+y = 42
+typeof(y)
+z = 6.02e23
+typeof(z)
+```
+
+Here we see that even though R has an "integer" class and 42 could be stored more efficiently as an integer with notation used above it is stored as "numeric". If we want 42 to be stored as an integer we must specify it using specific notation:
+
+```{r Intro-R2-5}
+y = 42L
+typeof(y)
+```
+
+R have all common math operators and functions build in:
+```{r Intro-R2-6}
+2 + 3
+3 * 4
+4 / 2
+5^2
+# results of calculations can be stored as variable
+c = 2*(3+7)/5 + 1
+sin(c)
+sqrt(c)
+```
+
+### Character
+
+The `character` type stores text. Text variables can be created using single or double quotation marks, that are completely interchangeable:
+```{r Intro-R2-7}
+a = "some text"
+a
+typeof(a)
+b = 'another text. "Double quotes" can be used here'
+b
+```
+
+In addition to standard alphanumeric characters, strings can also store various special characters. Special characters are specified using a backlash followed by a single character, the most relevant are the special character for tab : `\t` and new line : `\n`:
+```{r Intro-R2-8}
+# cat is a fanction that concatenates and prints all its arguments
+cat("'Hello World\n'")
+cat("'Hello\tWorld\n'")
+cat("'Hello\nWorld\n'")
+```
+There are many text useful functions, let's briefly discuss few of them:
+```{r Intro-R2-9}
+# concatenate
+paste("hello","world")
+# defualt separater is space, let's change it
+paste("hello","world",sep='_')
+# use paste0 if you do not need separator
+paste0("he",'llo')
+
+# substitute
+text = 'hello world'
+gsub('hello','goodbye',text)
+
+# check pattern
+grepl('wo',text)
+grepl('bye',text)
+```
+### These all are vectors!
+Until now we stored just one value in each variable. But actually all types we just discussed are vectors, that is, they can store any number of values of given type. Function `c` can be used to **c**reate new vectors:
+```{r Intro-R2-10}
+n = c(1,3,-2)
+n
+typeof(n)
+
+# ':' operator can be used to make vector of consecuitive integers
+4:7
+10:2
+
+t = c('hello','world')
+t
+typeof(t)
+
+# number of elements
+length(t)
+
+# call of noset elements of vector would return NA
+t[3]
+
+# vectors can be extended by assignment to unset elements
+t[3] = 'and'
+t[4] = 'goodbye'
+t
+```
+
+Vectors can store only values of the same type. In any attempt to combine values of different types they are auto-coerced to the rightmost type in the following sequence: `logical -> integer -> numeric -> character`:
+```{r Intro-R2-11}
+# I use external parentheses to assign and print variale in single statement
+(x = c(TRUE,FALSE))
+typeof(x)
+
+# not it is integer. Note that TRUE is coerced to one and FALSE to zero.
+(x = c(TRUE,FALSE,2L))
+typeof(x)
+
+(x = c(TRUE,FALSE,2L,10.2))
+typeof(x)
+
+
+(x = c(TRUE,FALSE,2L,10.2,'text'))
+typeof(x)
+
+#auto-coercion tooks place if math operators or functions are applied to operands of different types:
+TRUE + 1
+FALSE + TRUE
+typeof(3L + 1.3)
+
+(x=1:10 > 5)
+sum(x) # gives number of TRUEs in x
+
+# it can be used to calculate simple statistics on a vector
+(ages = rnorm(10,mean=60,sd = 10)) # lets randomly generate ages of ten people
+# how many of them are older than 60 years?
+sum(ages>60) # you can get another namber since ages are  randomly generated
+```
+
 **Exercise 1**
 
-Experiment with other character and numeric values, which are coerced to TRUE or FALSE? which are coerced to neither? 
-Do you ever throw a warning/error message?
-
-### Factors
-
-String/Character data is very memory inefficient to store, each letter generally requires the same amount of memory as any integer. Thus when storing a vector of strings with repeated elements it is more efficient assign each element to an integer and store the vector as integers and an additional string-to-integer association table. Thus, by default R will read in text columns of a data table as factors. 
-
-```{r Intro-R17}
-str_vector = c("Apple", "Apple", "Banana", "Banana", "Banana", "Carrot", "Carrot", "Apple", "Banana") 
-factored_vector = factor(str_vector)
-factored_vector
-as.numeric(factored_vector)
+What types will you get with following expressions (guess and check)
+```{r Intro-R2-12, eval=FALSE}
+(2 > 3)
+(4 > 2)*2L
+paste0(4,5)
+as.numeric('2.3')
 ```
+<details><summary>Answer</summary>
 
-The double nature of factors can cause some unintuitive behaviour. E.g. joining two factors together will convert them to the numeric form and the original strings will be lost.
-
-```{r Intro-R18}
-c(factored_vector, factored_vector)
+```{r Intro-R2-13}
+(2 > 3) # results of this operation is logical
+(4 > 2)*2L # here logical is coerced to integer during multiplication. So result is integer
+paste0(4,5) # paste0 treats its arguments as text, so result is character
+as.numeric('2.3') # functions of that type (with names started with 'as.') coerce its argument to the specified type, numeric in this case
 ```
+</details>
+### Vectorized operations
+Since all basic types in R are vectors, operators and many functions are vectorized, that is, they perform operations for each element of vector arguments:
+```{r Intro-R3-1}
+a = 1:10
+a^2 # each element is sqared
 
-Likewise if due to formatting issues numeric data is mistakenly interpretted as strings, then you must convert the factor back to strings before coercing to numeric values:
-```{r Intro-R19}
-x = c("20", "25", "23", "38", "20", "40", "25", "30")
-x = factor(x)
-as.numeric(x)
-as.numeric(as.character(x))
+b = 5:-4
+
+# a and b are multiplied per element
+a * b
 ```
+What would happen if lengths of operands are not identical?
+```{r Intro-R3-2}
+a * 2 # this works well, each element in a is multiplied by 2
 
-In R versions before 4.0, you had set the environment option `stringsAsFactors=FALSE` to read text as character data instead of factors. This had to be done at the start of each R session. Starting with version 4.0, this option is set by default. You can set `stringsAsFactors=TRUE` in functions like `read.csv` and `read.table`, if this is the desired behaviour. 
+# shorter operand is recycled as many times as it needed to cover longer operan
+a * (1:2) 
+
+# R throws warning (not error!) if length of londer operands is not dividable by length of shorter one
+a * (1:3)
+```
+## Named vectors
+R allows elements of vectors to be named:
+```{r Intro-R3-2-1}
+(a = c(a=1,b=3,other.name=10)) # dot is not a special character in R, it can be used in variable names is well (contrary to python)
+```
+Names can be accessed and modified by `names` function:
+```{r Intro-R3-3}
+names(a)
+names(a)[1] = 'newname'
+a
+names(a) = LETTERS[1:3]
+a
+```
+## Vector subsetting
+Vector subsetting is one of main advantages of R. It is very flexible and powerful. There are three types of subsetting:
+1. By index (numerical)
+2. By name (character)
+3. By condition (logical)
+To make subsetting one need to type name of variable and specify desired elements in square brackets.
+### Numerical subsetting
+Contrary to many other languages vector indexing in R is 1-based, that is, first element has index 1.
+```{r Intro-R3-4}
+x = c(1,4,7,9,10,24,100)
+# you can take just one value
+x[4]
+# or multiple values
+x[c(1,4,5)]
+# one element can be taken multiple times; elements can be taken in any order
+x[c(6,1,5,1,2,6,6)]
+# use : to take consecutive elements (through creition of vector with consecutiv integers)
+x[2:5]
+x[length(x):1]
+# results of subsetting can be saved into variale
+y = x[c(5,5,1:3)]
+y
+```
+Negative indexes can be used to exclude specific elements:
+```{r Intro-R3-5}
+x[-1:-3] # exclude first three elements
+x[-length(x)] # exclude last
+
+```
+### Subsetting by names
+Named vectors can be indexed by names:
+```{r Intro-R3-6}
+names(x) = letters[1:length(x)] # letters and LETTERS are pre-defined vectors of latin characters
+x
+x['a']
+x[c('b','a','c')]
+```
+IMPORTANT! R allows name duplication. In this case first match will be returned:
+```{r Intro-R3-7}
+names(x)[3] = 'a'
+x
+x['a']
+```
+### Logical subsetting
+Logical subsetting used to conditionally select some elements. One can get all odd values for instance
+```{r Intro-R3-8}
+x[x %% 2 == 1] # operator '%%' gives you residue of division
+# or all values above given threshold
+x[x>9]
+```
+Logical value in brackets should not necessary be calculated based on the vector
+```{r Intro-R3-9}
+x[c(T,F,F,T,F,T,T)] # T and F are pre-defined variables that store TRUE and FALSE respectively
+# Logical value in brackets is recycled if it is shorter than the vector. This tick can be used to take each second element from the vector but it is also cause of many problems
+x[c(T,F)]
+```
 
 **Exercise 2**
-How would you use factors to create a vector of colours for an arbitrarily long vector of fruits like `str_vector` above?
+
+1. Get each third element from vector x
+2. Get only these values of vector x that are dividable by 4
+3. Get all elements of x which names are equal to 'a'
 
 <details><summary>Answer</summary>
 
-```{r Intro-R21}
-long_str_vector = c(str_vector, str_vector, str_vector)
-fruit_cols = c("red", "yellow", "orange")
-fruit_colour_vec = fruit_cols[as.numeric(factor(long_str_vector, levels=c("Apple", "Banana", "Carrot")))]
-```
+```{r Intro-R3-10}
+# 1
+x[c(F,F,T)]
+#or
+x[(1:length(x)) %% 3 == 0]
 
+# 2
+x[x%%4==0]
+
+# 3
+x[names(x)=='a']
+```
 </details>
 
-### Checking class/type
-We recommend checking your data is of the correct class after reading from files:
-
-```{r Intro-R22}
-x = 1.4
-is.numeric(x)
-is.character(x)
-is.logical(x)
-is.factor(x)
+## Lists
+Vectors can be used to store values of the same type. They would not work If one needs to store information of different types, name and age of a person for instance. R lists allows to store variable of any types, including other lists. Lists are very flexible (too flexible to be honest) and can fulfill all you needs. Lists can be created by `list` function that is analogous to `c` function.
+```{r Intro-R4-1}
+l = list(1,'a',2:4,c('b','c'))
+l
+typeof(l)
+# function str can be used to ptint list in more compact way
+str(l)
+# lists can be named
+l = list(name='Sam',yob=2001L,weight=70.5)
+str(l)
+# same three types of indexing can be used
+# numerical
+l[3:2]
+# by names 
+l[c('weight','name')]
+# logical
+l[c(F,T,F)]
+```
+List indexing by `[` operator returns sublist of the original list. To get specific element of of list `[[` operator should be used:
+```{r Intro-R4-2}
+# this is list with single element that store one value
+l2 = l[3]
+typeof(l2)
+l2
+# this is numeric (double) vector with one value
+l3 = l[[3]]
+typeof(l3)
+l3
+```
+Operator `[[` looks ugly, so for named vector one can use operator `$` that is completely identical to `[[`:
+```{r Intro-R4-3}
+l$name
+typeof(l$name)
+```
+Any types of data can be stored in list
+```{r Intro-R4-4}
+# even function!
+l = list(abc=letters[1:4],innerlist=list(a='a',b=1:10),sumfun = sum)
+str(l)
+l$innerlist$b
+l$innerlist$b[5:1]
+l$sumfun(1:10)
 ```
 
+## Dictionaries 
+Unlike python, R have no dictionary (hashtable) objects. In most cases named vectors (or lists) can be used instead (but be careful with name duplication). Otherwise one can use environments as hash, but it is out of scope of this course.
 
-## Basic data structures
-So far we have only looked at single values and vectors. Vectors are the simplest data structure in R. They are a 1-dimensional array of data all of the same type. If the input when creating a vector is of different types it will be coerced to the data-type that is most consistent with the data.
-
-```{r Intro-R23}
-x = c("Hello", 5, TRUE)
-x
-class(x)
+## Classes/S3
+R supports at least three different systems for object oriented programming (OOP). Most of R users do not need to create their own classes. But it is worth to know these systems to deal with existing packages. We will briefly discuss two of them: S3 and S4. 
+Lets start with S3 system. In OOP paradigm each variable is treated according to its class. R allows to add attributes to any variable. The attributes can be accessed, set and modified using `attributes` or `attr` functions.
+```{r Intro-R5-1}
+v = c(a=1,b=10,z=7)
+attributes(v)
 ```
-Here we tried to put character, numeric and logical data into a single vector so all the values were coerced to `character` data.
+So, names of vector value are one of vector attribute. Normally, all attributes are accessed by specific functions such as `names`. S3 system uses attribute called `class` that can be accessed using function `class`. We will use `factor` class to illustrate S3 system. Factor is a class developed to store categorical information such as gender (male/female) or species (dog/cat/human). Categorical information can be stored as a text (that is OK in most of cases), but sometime factors are useful.
+```{r Intro-R5-2}
+# t.test performs t.test for given vector and returns list with defined class attribute
+f = factor(c('m','m','f'),levels = c('m','f','unk'))
+# internaly factors are integer vectors
+typeof(f)
+# but they have class attribute set to 'factor'
+class(f)
+# it affects how they printed
+f
+# it will be printed differently if class is unset
+f2 = unclass(f)
+class(f2)
+f2
+```
+Some R functions (called generic, `print` for instance) can dispatch the function call, that is call specific function in dependence on its arguments. In this case it simply calls a functions with name that is combination of generic function name and class name separated by dot:
+```{r Intro-R5-3}
+print.factor(f2)
+```
+while f2 is not a factor now, it still can be printed as factor if we call corresponding function manually.
+## 2d data structures
+The types we discussed so far are one-dimensional, but some data (gene-to-cell expression matrix, or sample metadata) require 2d (or even Nd) structures (aka tables) to be stored. There are two 2d structures in R: arrays and data.frames. Arrays allows to store only values of a single type because internally arrays are vector. Data.frames can have columns of different types, while each column can contain values of only single type. Internally data.frames are lists of columns.
+### Arrays
+```{r Intro-R5-4}
+a = matrix(1:12,ncol=3)
+a
+# internaly array is an integer vector
+typeof(a)
+# with class 'matrix'
+class(a)
+# and attribute dim (that gives number of row and columns)
+attributes(a)
+# dimentions of matrix can be accessed using dedicated functions
+dim(a)
+nrow(a)
+ncol(a)
+# arrays can be also named, but now names would be assigned to rows and columns
+colnames(a) = letters[1:ncol(a)]
+rownames(a) = LETTERS[1:nrow(a)]
+a
+```
+Array subsetting can be performed using same three approaches (by numbers, by names and logically), but now indexes will apply to rows and columns separately:
+```{r Intro-R5-4-1}
+# select firts two rows and three columns in reversed order
+# comma separates row (left) and columns (right)
+a[1:2,3:1]
+# if you want to take all rows (columns) just leave left (right) place empty
+a[,2:3] #all rows
+a[c(4,2,3),] # all columns
 
-A `matrix` is the two dimensional version of a vector, it also requires all data to be of the same type. 
-If we combine a character vector and a numeric vector into a matrix, all the data will be coerced to characters:
+# rows and columns can be indexed by names
+a[c('D','C'),c('b','b')]
+# logicaly
+a[,c(T,F,T)]
+a[a[,1]>2,] # take all rows where values in first column are above 2
 
-```{r Intro-R24}
-x = c("A", "B", "C")
-y = c(1, 2, 3)
-class(x)
-class(y)
-m = cbind(x, y)
-m
+# indexing system can be mixed:
+a[-2,c('c','b')]
 ```
 
-The quotation marks indicate that the numeric vector has been coerced to characters. Alternatively, to store data with columns of different data-types we can use a dataframe.
-
-```{r Intro-R25}
-z = data.frame(x, y)
-z
-class(z[,1])
-class(z[,2])
+### Data.frames
+Data.frame is very similar to matrix but it allows to store values of different types in different columns. Data.frame can be created by `data.frame` function by specifying columns, all columns should be vectors of the same length.
+```{r Intro-R6-1}
+d = data.frame(name=c('Sam','John','Sara'),age=c(40,14,51),sex=factor('m','m','f'))
+class(d)
+typeof(d)
+d
+```
+Similarly to arrays data.frames can have rownames and colnames. The only difference is that data.frame rownames should be unique:
+```{r Intro-R6-2}
+colnames(d)
+#rownames(d) = c('S','J','S') it will throw exception since rowname 'S' is duplicated
+rownames(d) = c('Sm','Jn','Sr')
+d
+```
+Indexing of data.frames is identical to array indexing:
+```{r Intro-R6-3}
+d[c(3,1),c('sex','name')]
+```
+But since data.frames are lists, operator `$` can be used as well to get single column:
+```{r Intro-R6-4}
+d$age
+```
+## S4 objects
+S3 system allows to make functions which behavior depends on class of its first argument, but it cannot take into account other arguments. Additionally, S3 doesn't allow to customize data structures, variables used in S3 system are atomic vectors or lists. S4 system allows to solve these problems. The main difference of S4 system compared do S3 is that in S4 each class have formal definition that describes what data are stored in the objects of this class (compare to S3 where you can assign any class to any variable). The data is stored in slots that have names and specified types. One need to specify slots to create new class:
+```{r Intro-R7-1}
+setClass("Person", 
+  slots = c(
+    name = "character", 
+    age = "numeric"
+  )
+)
+```
+Now we can create variable of this class
+```{r Intro-R7-2}
+john = new("Person", name = "John Smith", age = 30)
+class(john)
+typeof(john)
+john
+```
+Normally, slots can be accessed and modified by specific functions. For the class Person we specified above, one can expect function `name` to access name. But R allows to access slots directly using operator `@` (that is not a good style but might be very convenient):
+```{r Intro-R7-3}
+john@name
+#names of all slots can be given by
+slotNames(john)
+# to get slot by name
+slot(john,'age')
+#or
+john@age
 ```
 
-If you have set stringsAsFactors=FALSE as above you will find the first column remains characters, otherwise it will be automatically converted to a factor.
+You can find more information about S4 classes (including how to create generic functions) [here](https://adv-r.hadley.nz/s4.html).
+**Exercise 3**
+1. What are type and classes of `mtcars` variable?
+2. What attributes is has?
+3. What attribute is used to store rownames? What is about colnames?
+4. What are right functions to access these attributes?
+5. Select all cars that have 4 cylinders
+6. Select sub-table from mtcars that include cars with at least two carburetors and columns that names are three character long (use function `nchar`)
+7. Calculate matrix of correlations between columns of mtcars by `cm = cor(mtcars)`
+8. Answer Q1-3 for `cm`
+`mtcars` is a toy dataset loaded automatically when R session starts.
 
-```{r Intro-R26}
-options(stringsAsFactors=TRUE)
-z = data.frame(x, y)
-class(z[,1])
+<details><summary>Answer</summary>
+
+```{Intro-R7-4}
+# 1
+class(mtcars)
+type(mtcars)
+# 2
+attributes(mtcars)
+# 3
+# rownames are stored as row.names attribute
+# colnames are stored as names (because mtcars is list, and column names are just names of the list elements)
+# 4
+rownames(mtcars)
+colnames(mtcars)
+# 5
+mtcars[mtcars$cyl==4,]
+# 6
+nchar(colnames(mtcars))
+mtcars[mtcars$carb>=2,nchar(colnames(mtcars))==3]
+# 7
+cm = cor(mtcars)
+# 8
+class(cm)
+type(cm)
+attributes(cm)
+# rownames and colnames of array are stored as dimnames attribute (compare to data.frame above)
 ```
-
-Another difference between matrices and dataframes is the ability to select columns using the `$` operator:
-
-```{r Intro-R27, eval=FALSE}
-m$x # throws an error
-z$x # ok
-```
-
-The final basic data structure is the `list`. Lists allow data of different types and different lengths to be stored in a single object. Each element of a list can be any other R object : data of any type, any data structure, even other lists or functions. 
-
-```{r Intro-R28}
-l = list(m, z)
-ll = list(sublist=l, a_matrix=m, numeric_value=42, this_string="Hello World", even_a_function=cbind)
-ll
-```
-
-Lists are most commonly used when returning a large number of results from a function that do not fit into any of the previous data structures. 
-
+</details>
 ## More information
-
 You can get more information about any R commands relevant to these datatypes using by typing `?function` in an interactive session.

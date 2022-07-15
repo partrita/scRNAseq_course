@@ -82,11 +82,13 @@ We may also produce other matrices from our raw count data, for example a matrix
 And finally, because single-cell experiment data is very high dimensional (with thousands of cells and thousands of genes), we often employ _dimensionality reduction_ techniques to capture the main variation in the data at lower dimensions. 
 
 `SingleCellExperiment` (SCE for short) is an object that stores all this information in a synchronised manner. 
-The different parts of the object are referred to as "slots":
+The different parts of the object can be access by special functions:
 
-- One or more matrices of expression - stored in the `assay` slots.
-- Information about the genes (the rows of the object) - stored in the `rowData` slot.
-- Information about the cells (the columns of the object) - stored in the `colData` slot.
+- One or more matrices of expression can be accessed by functions `assay` or `assays`
+- Information about the genes (the rows of the object) can be obtained using `rowData` function.
+- Information about the cells (the columns of the object) can be accessed by function `colData`.
+
+Some of these data are stored in the slots with similar names and can be accessed by `@` operator, but usage of accessor functions is consedered as a better programming style.
 
 ![The `SingleCellExperiment` object. Features (e.g. genes, isoforms or exons) are stored as rows and their metadata is in a `rowData` slot. Cells are stored as columns, with their metadata in `colData` slot. Matrices of expression are stored in the `assay` slots. Dimensionality reduction projections of the cells are stored in the `reducedDim` slots.](https://raw.githubusercontent.com/Bioconductor/OSCABase/images/images/SingleCellExperiment.png)
 
@@ -128,7 +130,7 @@ If we print the contents of this object, we will get several useful pieces of in
 tung
 ```
 
-- We have 20327 genes (rows) and 864 cells (columns). 
+- We have 19027 genes (rows) and 864 cells (columns). 
 - There is a single assay named "counts".
 - We can preview some of the gene names ("rownames") and cell names ("colnames").
 - There is no gene metadata ("rowData" is empty).
@@ -333,10 +335,17 @@ colData(tung)$total_counts <- colSums(counts(tung))
 
 **A2.**
 
-We need to divide our counts matrix by the new column we've just created, and save it in a new assay using `<-`:
+We need to divide our counts matrix by the new column we've just created. Function `sweep` can be used to make it columnwise:
 
 ```{r}
-assay(tung, "cpm") <- counts(tung)/tung$total_counts/1e6
+# function sweep takes following arguments:
+# matrix to normalize
+# dimention to normalize along (1 - by rows, 2 - by columns)
+# statistics to normalize by
+# function to use for normalization
+assay(tung, "cpm") <- sweep(counts(tung),2,tung$total_counts/1e6,'/')
+# check that column sums are 1e6 now
+colSums(cpm(tung))[1:10]
 ```
 
 We also divided by `1e6`, so that it's in units of millions. 
