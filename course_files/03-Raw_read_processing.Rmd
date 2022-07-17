@@ -125,6 +125,7 @@ Cellular barcode sequences are synthetic sequences attached to the beads that id
 | 10x Chromium Single Cell 3' v3.1 (Next GEM) | 16 | 12 | 3M-february-2018.txt | 
 | 10x Chromium Single Cell 5' v1.1 | 16 | 10 | 737K-august-2016.txt | 
 | 10x Chromium Single Cell 5' v2 (Next GEM) | 16 | 10 | 737K-august-2016.txt | 
+| 10x Chromium Single Cell Multiome | 16 | 12 | 737K-arc-v1.txt |
 
 
 Cell Ranger uses [the following algorithm](https://kb.10xgenomics.com/hc/en-us/articles/115003822406-How-does-Cell-Ranger-correct-barcode-sequencing-errors-) to correct putative barcode sequences against the whitelist : 
