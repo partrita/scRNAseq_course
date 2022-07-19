@@ -71,12 +71,12 @@ docker-machine ip default
 
 Please click on `New -> Terminal`. In the new terminal window please run:
 ```
-./poststart.sh
+source <(curl -s https://raw.githubusercontent.com/cellgeni/scRNA.seq.course/master/setup.sh)
 ```
 
-If you want to download data files outside of Docker image you can still use the same `poststart.sh` script but you will need to install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-bundle.html) on your computer.
+If you want to download data files outside of Docker image you can still use the `poststart.sh` script from this repository but you will need to install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-bundle.html) on your computer.
 
-Alternatively, you can browse and download the files in you web-browser by visiting [this link](https://www.singlecellcourse.org/data/).
+Alternatively, you can browse and download the files in you web-browser by visiting [this link](https://singlecellcourse.cog.sanger.ac.uk/index.html?shared=data/).
 
 ### RStudio
 
@@ -97,9 +97,7 @@ $ rstudio-server version
 
 ## Manual installation 
 
-If you are not using a docker image of the course, then to be able to run all code chunks of the course you need to clone or download the [course GitHub repository](https://github.com/cellgeni/scRNA.seq.course) and start an R session in the `course_files` folder. You will also need to install all required packages manually.
-
-Alternatively, you can just install packages listed in a chapter of interest.
+If you are not using the docker version of the course, then to be able to run all code chunks of the course you need to clone or download the [course GitHub repository](https://github.com/cellgeni/scRNA.seq.course) and start an R session in the `course_files` folder. The course files can also be retrieved using the `setup.sh` from this repository if you're working on Unix/Mac. You will also need to install all required R/python packages manually. Alternatively, you can just install packages listed in a chapter of interest.
 
 ## License
 All of the course material is licensed under <b>GPL-3</b>. Anyone is welcome to go through the material in order to learn about analysis of scRNA-seq data. If you plan to use the material for your own teaching, we would appreciate if you tell us about it in addition to providing a suitable citation.
