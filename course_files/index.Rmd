@@ -28,7 +28,11 @@ Please follow this link and register for the __"Analysis of single cell RNA-seq 
 <a href="http://training.csx.cam.ac.uk/bioinformatics/search" target="blank">http://training.csx.cam.ac.uk/bioinformatics/search</a>
 
 ## GitHub
-<a href="https://github.com/hemberg-lab/scRNA.seq.course" target="blank">https://github.com/hemberg-lab/scRNA.seq.course</a>
+
+Updated repository: <a href="https://github.com/cellgeni/scRNA.seq.course" target="blank">https://github.com/cellgeni/scRNA.seq.course</a>
+
+Original course (outdated): <a href="https://github.com/hemberg-lab/scRNA.seq.course" target="blank">https://github.com/hemberg-lab/scRNA.seq.course</a>
+
 
 ## Course Docker image
 
@@ -36,10 +40,10 @@ The course can be reproduced without any package installation by running the cou
 
 ### Run the image
 Make sure Docker is installed on your system. If not, please follow [these instructions](https://docs.docker.com/engine/installation/).
-To run the course docker image (use [the latest version](https://quay.io/repository/cellgeni/scrna-seq-course?tab=tags) of the course instead of v5.14):
+To run the course docker image (use [the latest version](https://quay.io/repository/cellgeni/scrna-seq-course?tab=tags):
 
 ```
-docker run -p 8888:8888 -e PASSWORD="jupyter" quay.io/cellgeni/scrna-seq-course:v5.14 
+docker run -p 8888:8888 -e JUPYTER_TOKEN="jupyter" quay.io/cellgeni/scrna-seq-course:latest
 ```
 
 Then follow the instructions provided, e.g.:
@@ -74,9 +78,16 @@ Alternatively, you can browse and download the files in you web-browser by visit
 
 Now go back to Jupyter browser tab and change word `tree` in the url to `rstudio`. RStudio server will open with all of the course files, software and the data folder available.
 
+### Compute resources
+
+Compute resources for the live course will be provided by Amazon.
+
+<a href="https://aws.amazon.com/what-is-cloud-computing"><img src="https://d0.awsstatic.com/logos/powered-by-aws.png" alt="Powered by AWS Cloud Computing"></a>
+
+
 ## Manual installation
 
-If you are not using a docker image of the course, then to be able to run all code chunks of the course you need to clone or download the [course GitHub repository](https://github.com/hemberg-lab/scRNA.seq.course) and start an R session in the `course_files` folder. You will also need to install all required packages manually.
+If you are not using a docker image of the course, then to be able to run all code chunks of the course you need to clone or download the [course GitHub repository](https://github.com/cellgeni/scRNA.seq.course) and start an R session in the `course_files` folder. You will also need to install all required packages manually.
 
 Alternatively, you can just install packages listed in a chapter of interest.
 
