@@ -6,31 +6,34 @@ In this course we will discuss some of the questions that can be addressed using
 
 The number of computational tools is increasing rapidly and we are doing our best to keep up to date with what is available. One of the main constraints for this course is that we would like to use tools that are implemented in R and that run reasonably fast. Moreover, we will also confess to being somewhat biased towards methods that have been developed either by us or by our friends and colleagues. 
 
-**Note that currently (second half of 2021) the course is being actively updated, and the content will change significantly without further notice.**
+**:information_source: Note that currently (first half of 2022) the course is being actively updated, and the content will change significantly without further notice.**
 
 ## Web page
 
-__[https://www.singlecellcourse.org](https://www.singlecellcourse.org)__
-
-#### Data
-
-__[https://www.singlecellcourse.org/data/](https://singlecellcourse.org/data/)__
+| HOMEPAGE | DATA |
+| ------------- | ------------- |
+| https://www.singlecellcourse.org  | https://singlecellcourse.cog.sanger.ac.uk/index.html?shared=data/  |
 
 ## Video
 
 This video was recorded during the course (2 days) in May 2019. **The content will not match the updates that happened in 2021. New videos will be uploaded when available.**
 
-__[Day 1](https://www.youtube.com/watch?v=thHgPqQpkE4)__
+| Day | Link | Description |
+| ------------- | ------------- | ------------- |
+| **#1** | [https://www.youtube.com/watch?v=thHgPqQpkE4](https://www.youtube.com/watch?v=thHgPqQpkE4&t=2738s) | The lecture **starts at 45:38** of video. Topics: About the course, Introduction to Single-Cell RNA-seq, Processing Raw scRNA-Seq Sequencing Data, Introduction to R/Bioconductor, scRNA-seq Analysis with Bioconductor, Basic Quality Control (QC) and Exploration of scRNA-seq Datasets. |
+| **#2** | [https://www.youtube.com/watch?v=7dQ_pleDO2Y](https://www.youtube.com/watch?v=7dQ_pleDO2Y&t=3436s) | The lecture **starts at 57:16** of video. Topics: Biological Analysis, Single cell RNA-seq analysis using Seurat, scRNA-seq Dataset Integration, Resources |
 
-__[Day 2](https://www.youtube.com/watch?v=7dQ_pleDO2Y)__
 
 ## Registration  
 
 Please follow this link and register for the __"Analysis of single cell RNA-seq data"__ course:
 <a href="http://training.csx.cam.ac.uk/bioinformatics/search" target="blank">http://training.csx.cam.ac.uk/bioinformatics/search</a>
 
-## GitHub
-<a href="https://github.com/hemberg-lab/scRNA.seq.course" target="blank">https://github.com/hemberg-lab/scRNA.seq.course</a>
+## GitHub :octocat:
+
+- Updated repository: https://github.com/cellgeni/scRNA.seq.course
+- Original course (outdated) https://github.com/hemberg-lab/scRNA.seq.course
+
 
 ## Docker image
 
@@ -39,10 +42,12 @@ Please follow this link and register for the __"Analysis of single cell RNA-seq 
 The course can be reproduced without any package installation by running the course docker image which contains all the required packages.
 
 ### Run the image
-Make sure Docker is installed on your system. If not, please follow [these instructions](https://docs.docker.com/engine/installation/). To run the course docker image (use [the latest version](https://quay.io/repository/cellgeni/scrna-seq-course?tab=tags) of the course instead of v5.14):
+Make sure Docker is installed on your system. If not, please follow [these instructions](https://docs.docker.com/engine/installation/). To run the course docker image use [the `latest` version](https://quay.io/repository/cellgeni/scrna-seq-course?tab=tags). 
+
+You can pass the environment variable `JUPYTER_TOKEN` to the container to set a specific password or you can let jupyter generate a random access token:
 
 ```
-docker run -p 8888:8888 -e PASSWORD="jupyter" quay.io/cellgeni/scrna-seq-course:v5.14
+docker run -p 8888:8888 -e JUPYTER_TOKEN=password quay.io/cellgeni/scrna-seq-course:latest
 ```
 
 Then follow the instructions provided, e.g.:
@@ -77,9 +82,22 @@ Alternatively, you can browse and download the files in you web-browser by visit
 
 Now go back to Jupyter browser tab and change word `tree` in the url to `rstudio`. RStudio server will open with all of the course files, software and the data folder available.
 
-## Manual installation
 
-If you are not using a docker image of the course, then to be able to run all code chunks of the course you need to clone or download the [course GitHub repository](https://github.com/hemberg-lab/scRNA.seq.course) and start an R session in the `course_files` folder. You will also need to install all required packages manually.
+### Container's base software
+```bash
+$ lsb_release -d
+Description:    Ubuntu 20.04.2 LTS
+
+$ R --version
+R version 4.2.1 (2022-06-23) -- "Funny-Looking Kid"
+
+$ rstudio-server version
+2022.07.0+548 (Spotted Wakerobin) for Ubuntu Bionic
+```
+
+## Manual installation 
+
+If you are not using a docker image of the course, then to be able to run all code chunks of the course you need to clone or download the [course GitHub repository](https://github.com/cellgeni/scRNA.seq.course) and start an R session in the `course_files` folder. You will also need to install all required packages manually.
 
 Alternatively, you can just install packages listed in a chapter of interest.
 
