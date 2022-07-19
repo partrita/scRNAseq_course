@@ -311,9 +311,12 @@ We can see there's a cluster of platelets located between clusters 6 and 14, tha
 
 If need arises, we can separate some clusters manualy. There are also clustering methods geared towards indentification of rare cell populations. Let's try using fewer neighbors in the KNN graph, combined with Leiden algorithm (now default in `scanpy`) and slightly increased resolution: 
 
-```{r fig.align="center"}
+```{r fig.align="center",warning=F,message=F}
 srat <- FindNeighbors(srat, dims = 1:30, k.param = 15, verbose = F)
 srat <- FindClusters(srat, verbose = F, algorithm = 4, resolution = 0.9)
+```
+
+```{r fig.align="center"}
 table(srat[[]]$seurat_clusters)
 DimPlot(srat, label = T)
 ```
