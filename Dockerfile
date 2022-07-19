@@ -2,7 +2,7 @@ FROM jupyter/base-notebook
 
 # versions of software
 ARG r_cran_version="cran40"
-ARG rstudio_version="1.2.5019"
+ARG rstudio_version="2022.07.0-548"
 ARG fastqc_version="0.11.9"
 ARG kallisto_version="0.46.2"
 ARG samtools_version="1.11"
