@@ -109,7 +109,7 @@ __Exercise__: Vary the parameters of each distribution to explore how they affec
 ```{r de-real1, echo=TRUE, message=FALSE, warning=FALSE}
 library(scRNA.seq.funcs)
 library(edgeR)
-library(monocle)
+#library(monocle)
 library(MAST)
 library(ROCR)
 set.seed(1)
@@ -272,53 +272,55 @@ pVals <- p.adjust(pVals, method = "fdr")
 DE_Quality_AUC(pVals)
 ```
 
+<!-- 
 ### Monocle
 
 [Monocle](https://bioconductor.org/packages/release/bioc/html/monocle.html) can use several different models for DE. For count data it recommends the Negative Binomial model (negbinomial.size). For normalized data it recommends log-transforming it then using a normal distribution (gaussianff). Similar to edgeR this method uses a GLM framework so in theory can account for batches, however in practice the model fails for this dataset if batches are included.
 
 ```{r de-real12, fig.cap="ROC curve for Monocle.", message=FALSE, warning=FALSE}
-pd <- data.frame(group = group, batch = batch)
-rownames(pd) <- colnames(counts)
-pd <- new("AnnotatedDataFrame", data = pd)
-
-Obj <- newCellDataSet(
-    as.matrix(counts), 
-    phenoData = pd, 
-    expressionFamily = negbinomial.size()
-)
-Obj <- estimateSizeFactors(Obj)
-Obj <- estimateDispersions(Obj)
-res <- differentialGeneTest(Obj, fullModelFormulaStr = "~group")
-
-pVals <- res[,3]
-names(pVals) <- rownames(res)
-pVals <- p.adjust(pVals, method = "fdr")
-DE_Quality_AUC(pVals)
+#pd <- data.frame(group = group, batch = batch)
+#rownames(pd) <- colnames(counts)
+#pd <- new("AnnotatedDataFrame", data = pd)
+#
+#Obj <- newCellDataSet(
+#    as.matrix(counts), 
+#    phenoData = pd, 
+#    expressionFamily = negbinomial.size()
+#)
+#Obj <- estimateSizeFactors(Obj)
+#Obj <- estimateDispersions(Obj)
+#res <- differentialGeneTest(Obj, fullModelFormulaStr = "~group")
+#
+#pVals <- res[,3]
+#names(pVals) <- rownames(res)
+#pVals <- p.adjust(pVals, method = "fdr")
+#DE_Quality_AUC(pVals)
 ```
 
 __Exercise__: Compare the results using the negative binomial model on counts and those from using the normal/gaussian model (`gaussianff()`) on log-transformed normalized counts.
 
 <details><summary>Answer</summary>
 ```{r de-real13, fig.cap="ROC curve for Monocle-gaussian.", message=FALSE, echo=FALSE, warning=FALSE}
-pd <- data.frame(group = group, batch = batch)
-rownames(pd) <- colnames(norm)
-pd <- new("AnnotatedDataFrame", data = pd)
-
-Obj_log <- newCellDataSet(
-    as.matrix(log(norm + 1) / log(2)), 
-    phenoData = pd, 
-    expressionFamily = gaussianff()
-)
-Obj_log <- estimateSizeFactors(Obj_log)
+#pd <- data.frame(group = group, batch = batch)
+#rownames(pd) <- colnames(norm)
+#pd <- new("AnnotatedDataFrame", data = pd)
+#
+#Obj_log <- newCellDataSet(
+#    as.matrix(log(norm + 1) / log(2)), 
+#    phenoData = pd, 
+#    expressionFamily = gaussianff()
+#)
+#Obj_log <- estimateSizeFactors(Obj_log)
 # Obj_log <- estimateDispersions(Obj_log)
-res <- differentialGeneTest(Obj_log, fullModelFormulaStr = "~group")
-
-pVals <- res[,3]
-names(pVals) <- rownames(res)
-pVals <- p.adjust(pVals, method = "fdr")
-DE_Quality_AUC(pVals)
+#res <- differentialGeneTest(Obj_log, fullModelFormulaStr = "~group")
+#
+#pVals <- res[,3]
+#names(pVals) <- rownames(res)
+#pVals <- p.adjust(pVals, method = "fdr")
+#DE_Quality_AUC(pVals)
 ```
 </details>
+-->
 
 ### MAST
 
