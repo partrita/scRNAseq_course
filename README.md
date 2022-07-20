@@ -112,7 +112,8 @@ We recommend attending the [Introduction to RNA-seq and ChIP-seq data analysis](
 
 ## Citation
 
-Please cite [Tutorial: guidelines for the computational analysis of single-cell RNA sequencing data](https://www.nature.com/articles/s41596-020-00409-w),*Nature Protocols*, **2021**.
+Please cite [Tutorial: guidelines for the computational analysis of single-cell RNA sequencing data](https://www.nature.com/articles/s41596-020-00409-w)
+> Andrews, T.S., Kiselev, V.Y., McCarthy, D. et al. Tutorial: guidelines for the computational analysis of single-cell RNA sequencing data. Nat Protoc 16, 1–9 (2021). https://doi.org/10.1038/s41596-020-00409-w
 
 ## Contact
 
