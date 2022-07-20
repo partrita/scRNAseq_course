@@ -65,7 +65,7 @@ The final way to install packages is directly from source. In this case you have
 install.packages("M3Drop_3.05.00.tar.gz", type="source")
 ```
 
-## Installation instructions:
+## Installation instructions
 All the packages necessary for this course are available [here](https://github.com/hemberg-lab/scRNA.seq.course/blob/master/Dockerfile). Starting from "RUN Rscript -e "install.packages('devtools')" ", run each of the commands (minus "RUN") on the command line or start an R session and run each of the commands within the quotation marks. Note the ordering of the installation is important in some cases, so make sure you run them in order from top to bottom. 
 
 ## Data types
@@ -438,8 +438,10 @@ Some R functions (called generic, `print` for instance) can dispatch the functio
 print.factor(f2)
 ```
 while f2 is not a factor now, it still can be printed as factor if we call corresponding function manually.
+
 ## 2d data structures
 The types we discussed so far are one-dimensional, but some data (gene-to-cell expression matrix, or sample metadata) require 2d (or even Nd) structures (aka tables) to be stored. There are two 2d structures in R: arrays and data.frames. Arrays allows to store only values of a single type because internally arrays are vector. Data.frames can have columns of different types, while each column can contain values of only single type. Internally data.frames are lists of columns.
+
 ### Arrays
 ```{r Intro-R5-4}
 a = matrix(1:12,ncol=3)
