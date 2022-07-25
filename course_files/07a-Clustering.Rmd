@@ -115,19 +115,19 @@ To illustrate clustering of scRNA-seq data, we consider the `Deng` dataset of ce
 
 Let's load the data and look at it:
 
-```{r clustering2}
+```{r clustering2, echo=TRUE}
 deng <- readRDS("data/deng/deng-reads.rds")
 ```
 
 Let's look at the cell type annotation:
 
-```{r clustering3}
+```{r clustering3, echo=TRUE}
 table(colData(deng)$cell_type2)
 ```
 
 A simple PCA analysis already separates some strong cell types and provides some insights in the data structure:
 
-```{r clustering4}
+```{r clustering4, echo=TRUE}
 deng <- runPCA(deng)
 plotPCA(deng, colour_by = "cell_type2")
 ```
@@ -140,20 +140,20 @@ Let's run `SC3` clustering on the Deng data. The advantage of the `SC3` is that 
 
 Now let's image we do not know the number of clusters _k_ (cell types). `SC3` can estimate a number of clusters for you:
 
-```{r clustering5}
+```{r clustering5, echo=TRUE}
 deng <- sc3_estimate_k(deng)
 metadata(deng)$sc3$k_estimation
 ```
 
 Interestingly, the number of cell types predicted by `SC3` is smaller than in the original data annotation. However, if early, mid and late stages of different cell types are combined together, we will have exactly 6 cell types. We store the merged cell types in `cell_type1` column of the `colData` slot:
 
-```{r clustering6}
+```{r clustering6, echo=TRUE}
 plotPCA(deng, colour_by = "cell_type1")
 ```
 
 Now we are ready to run `SC3` (we also ask it to calculate biological properties of the clusters):
 
-```{r clustering7}
+```{r clustering7, echo=TRUE}
 deng <- sc3(deng, ks = 10, biology = TRUE, n_cores = 1)
 ```
 
