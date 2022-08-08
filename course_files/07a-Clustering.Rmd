@@ -19,7 +19,7 @@ One of the most promising applications of scRNA-seq is _de novo_ discovery and a
 
 ### Dimensionality reductions
 
-When working with large datasets, it can often be beneficial to apply some sort of dimensionality reduction method. By projecting the data onto a lower-dimensional sub-space, one is often able to significantly reduce the amount of noise. An additional benefit is that it is typically much easier to visualize the data in a 2 or 3-dimensional subspace. We have already discussed PCA (chapter \@ref(visual-pca)) and t-SNE (chapter \@ref(visual-pca)).
+When working with large datasets, it can often be beneficial to apply some sort of dimensionality reduction method. By projecting the data onto a lower-dimensional sub-space, one is often able to significantly reduce the amount of noise. An additional benefit is that it is typically much easier to visualize the data in a 2 or 3-dimensional subspace. We have already discussed PCA (chapter \@ref(pca-plot)) and t-SNE (chapter \@ref(tsne-map)).
 
 ### Clustering methods
 
@@ -204,7 +204,7 @@ sc3_interactive(deng)
 
 This command will open `SC3` in a web browser.
 
-__Note__ Due to direct calculation of distances `SC3` becomes very slow when the number of cells is $>5000$. For large datasets containing up to $10^5$ cells we recomment using `Seurat` (see chapter \@ref(seurat-chapter)).
+__Note__ Due to direct calculation of distances `SC3` becomes very slow when the number of cells is $>5000$. For large datasets containing up to $10^5$ cells we recomment using `Seurat` (see chapter \@ref(clust-intro0)).
 
 * __Exercise 1__: Run `SC3` for $k$ from 8 to 12 and explore different clustering solutions in your web browser.
 
@@ -216,7 +216,7 @@ __Note__ Due to direct calculation of distances `SC3` becomes very slow when the
 
 ### tSNE + kmeans
 
-[tSNE](https://lvdmaaten.github.io/tsne/) plots that we saw before (\@ref(visual-tsne)) when used the __scater__ package are made by using the [Rtsne](https://cran.r-project.org/web/packages/Rtsne/index.html) and [ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html) packages. Here we will do the same:
+[tSNE](https://lvdmaaten.github.io/tsne/) plots that we saw before (\@ref(exprs-over8)) when used the __scater__ package are made by using the [Rtsne](https://cran.r-project.org/web/packages/Rtsne/index.html) and [ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html) packages. Here we will do the same:
 ```{r clustering15, fig.cap = "tSNE map of the patient data"}
 deng <- runTSNE(deng, rand_seed = 1)
 plotTSNE(deng)

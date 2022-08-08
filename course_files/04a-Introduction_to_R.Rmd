@@ -4,7 +4,7 @@ output: html_document
 
 ```{r Intro-R0, echo=FALSE}
 library(knitr)
-opts_chunk$set(cache= TRUE, out.width='90%', fig.align = 'center')
+opts_chunk$set(cache = TRUE, fig.align = "center", echo=FALSE, tidy.opts=list(width.cutoff=80),tidy=TRUE)
 ```
 
 # Introduction to R/Bioconductor

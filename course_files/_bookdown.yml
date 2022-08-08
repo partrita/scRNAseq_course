@@ -1,8 +1,25 @@
-book_filename: "scRNA-seq-course"
+--- 
+always_allow_html: true
+book_filename: scRNA-seq-course
 chapter_name: ""
+new_session: true
 output_dir: website
-always_allow_html: yes
-new_session: yes
-rmd_files: [
-"index.Rmd","02-Introduction_to_scRNA-seq.Rmd","03-Raw_read_processing.Rmd","04a-Introduction_to_R.Rmd","04b-Introduction_to_Bioconductor.Rmd","04c-Introduction_to_ggplot2.Rmd","05-SingleCellExperiment.Rmd","06a-QC_and_confounders.Rmd","06b-Normalization.Rmd","06c-Remove_confounders.Rmd","07a-Clustering.Rmd","07b-Differential_expression.Rmd","08-Seurat.Rmd","09-Integration.Rmd","10-tools.Rmd","11-references.Rmd"
-]
+delete_merged_file: true
+rmd_files: 
+  - index.Rmd
+  - 02-Introduction_to_scRNA-seq.Rmd
+  - 03-Raw_read_processing.Rmd
+  - 04a-Introduction_to_R.Rmd
+  - 04b-Introduction_to_Bioconductor.Rmd
+  - 04c-Introduction_to_ggplot2.Rmd
+  - 05-SingleCellExperiment.Rmd
+  - 06a-QC_and_confounders.Rmd
+  - 06b-Normalization.Rmd
+  - 06c-Remove_confounders.Rmd
+  - 07a-Clustering.Rmd
+  - 07b-Differential_expression.Rmd
+  - 08-Seurat.Rmd
+  - 09-Integration.Rmd
+  - 10-tools.Rmd
+  - 11-references.Rmd
+---

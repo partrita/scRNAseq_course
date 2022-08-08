@@ -113,9 +113,9 @@ umi.qc <- umi[! rowData(umi)$discard, ! colData(umi)$discard]
 
 Log transformation makes the data group intuitively (e.g., by individual). However, there is clear dependency on the sequencing depth. 
 
-```{r exprs-norm7, fig.cap = "PCA plot of the Tung data (logcounts_raw)"}
-umi.qc <- runPCA(umi.qc,exprs_values = "logcounts_raw")
-plotPCA(umi.qc,colour_by = "batch", size_by = "detected", shape_by = "individual")
+```{r exprs-norm7, fig.cap = "PCA plot of the Tung data (logcounts raw)"}
+umi.qc <- runPCA(umi.qc, exprs_values = "logcounts_raw")
+plotPCA(umi.qc, colour_by = "batch", size_by = "detected", shape_by = "individual")
 ```
 
 ### PCA on CPM-normalized data

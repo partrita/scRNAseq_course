@@ -35,7 +35,7 @@ Besides its use in transcript quantification, it can also be used to find and an
 However, with bulk RNA-seq we can only estimate the **average expression level** for each gene across a population of cells, without regard for the heterogeneity in gene expression across individual cells of that sample. 
 Therefore, it is insufficient for studying heterogeneous systems, e.g. early development studies or complex tissues such as the brain.
 
-![Broad comparison of bulk vs single-cell RNA-seq](https://cdn.technologynetworks.com/tn/images/body/11570107721805.jpg)
+![Broad comparison of bulk vs single-cell RNA-seq. Image from [technologynetworks.com](https://cdn.technologynetworks.com/tn/images/body/11570107721805.jpg)(figures/bulk_vs_singlecell_sequencing.jpg)
 
 To overcome this limitation, new protocols were developed that allow applying RNA-seq at single-cell level (scRNA-seq), with its first publication in 2009 [@Tang2009-bu]. 
 This technology became more popular from around 2014 ([ref](https://doi.org/10.1038/nmeth.2801)), when new protocols and lower sequencing costs made it more accessible. 
@@ -83,7 +83,7 @@ Broadly speaking, a typical scRNA-seq protocol consists of the following steps (
 
 This course deals mostly with the last step of this workflow, but it is important to consider some of the steps that come before that, as they have an impact on the properties of the data we get. 
 
-![Schematic of a typical single-cell sequencing workflow. Abbreviations: IVT, _in vitro_ transcription; PCR, polymerase chain reaction; UMI, unique molecular identifier. Image from [Lafzi et al. 2018](https://doi.org/10.1038/s41596-018-0073-y).](https://media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41596-018-0073-y/MediaObjects/41596_2018_73_Fig1_HTML.png?as=webp)
+![Schematic of a typical single-cell sequencing workflow. Abbreviations: IVT, _in vitro_ transcription; PCR, polymerase chain reaction; UMI, unique molecular identifier. Image from [Lafzi et al. 2018](https://doi.org/10.1038/s41596-018-0073-y).](figures/singlecell_sequencing_workflow.png)
 
 
 :::note
@@ -98,7 +98,7 @@ This aspect needs to be considered in the data processing steps, which we detail
 There are currently a wide diversity of protocols for preparing scRNA-seq data, each with its own strengths and weaknesses, which we will come to below. 
 These methods can be categorized in different ways, but the two most important aspects are __cell capture or isolation__ and __transcript quantification__. 
 
-![Comparison of common scRNA-seq protocols. Abbreviations: cDNA, complementary DNA; DNA pol I, DNA polymerase I; FACS, fluorescence-activated cell sorting; PCR, polymerase chain reaction; RNase H, ribonuclease H; RT, reverse transcription; TSO, template-switching oligonucleotide. (source: [Chen, Teichman and Meyer, 2018](https://doi.org/10.1146/annurev-biodatasci-080917-013452))](https://www.annualreviews.org/na101/home/literatum/publisher/ar/journals/content/biodatasci/2018/biodatasci.2018.1.issue-1/annurev-biodatasci-080917-013452/20180705/images/large/bd10029.f2.jpeg)
+![Comparison of common scRNA-seq protocols. Abbreviations: cDNA, complementary DNA; DNA pol I, DNA polymerase I; FACS, fluorescence-activated cell sorting; PCR, polymerase chain reaction; RNase H, ribonuclease H; RT, reverse transcription; TSO, template-switching oligonucleotide. (source: [Chen, Teichman and Meyer, 2018](https://doi.org/10.1146/annurev-biodatasci-080917-013452))](figures/singlecell_protocols.jpeg)
 
 
 ## Cell Capture
@@ -106,9 +106,7 @@ These methods can be categorized in different ways, but the two most important a
 The strategy used for capturing cells determines the throughput of the experiment (i.e. how many cells we isolate), how the cells are selected prior to sequencing, as well as what kind of additional information besides transcript sequencing can be obtained. 
 The three most widely used options are __microtitre-plate-based__, __microfluidic-array-based__ and __microfluidic-droplet-based__ methods.
 
-```{r Exp-methods2, fig.cap="Single cell isolation methods."}
-knitr::include_graphics("figures/cell_capture_methods.svg")
-```
+![Single cell isolation methods.](figures/cell_capture_methods.png)
 
 **Microtitre-plate** methods rely on isolating cells into individual wells of the plate using, for example, pipetting, microdissection or fluorescent activated cell sorting (FACS). 
 One advantage of well-based methods is that one can take pictures of the cells before library preparation, providing an additional data modality. 
@@ -138,7 +136,7 @@ Preparing full-length libraries for single-cell is essentially identical to what
 Although in theory full-length protocols should provide an even coverage of transcripts, there can sometimes be biases in the coverage across the gene body (illustrated below). 
 Full-length protocols also allow the detection of splice variants, which is very difficult to do with other protocols.
 
-![Full-length RNA library preparation for Illumina sequencing. Samples are enriched for RNA containing a poly(A) tail, which avoids sequencing rRNA (at the cost of also missing other non-coding RNAs). The RNA is then fragmented and reverse-transcribed to more stable cDNA, Illumina adapters ligated to each molecule and finally PCR-amplified. In the case of single-cell RNA-seq, adapters with well-specific barcodes are used, allowing to identify sequencing reads belonging to individual cells. ([source](https://www.labome.com/method/RNA-seq.html))](https://aws.labome.com/figure/te-203-4.png)
+![Full-length RNA library preparation for Illumina sequencing. Samples are enriched for RNA containing a poly(A) tail, which avoids sequencing rRNA (at the cost of also missing other non-coding RNAs). The RNA is then fragmented and reverse-transcribed to more stable cDNA, Illumina adapters ligated to each molecule and finally PCR-amplified. In the case of single-cell RNA-seq, adapters with well-specific barcodes are used, allowing to identify sequencing reads belonging to individual cells. Image source []. ([source](https://www.labome.com/method/RNA-seq.html))](figures/RNA_library_preparation.png)
 
 ```{r Exprs-constr3, out.width = '90%', fig.cap="Example of 3' bias in the gene body coverage, after aligning the sequencing reads to the transcriptome. Each line represents the average coverage across all the genes in a cell. In this example, in addition to the 3' bias across all cells, there are three cells that look like outliers relative to the rest and should be removed from downstream analysis. These may be cells where RNA quality was poorer, e.g. due to degradation."}
 knitr::include_graphics("figures/Exp1_RSEQC_geneBodyCoverage_plot_Combined.png")
@@ -153,7 +151,7 @@ This UMI is part of the sequencing read and can then be computationally taken in
 Most current scRNA-seq protocols are tag-based, including the popular droplet-based _10x Chromium_ protocol, illustrated in the figure below. 
 One disadvantage of tag-based protocols is that, being restricted to one end of the transcript only, it reduces our ability to unambiguously align reads to a transcript, as well as making it difficult to distinguish different isoforms [@Archer2016-zq].
 
-![Protocol overview of 3' libraries using the _10X Chromium_ protocol. Cells are captured in individual oil droplets containing a bead (called GEMs). An individual bead contains adapters with a common barcode, but diverse and distinct _Unique Molecular Identifier_ (UMI) sequences. A poly(dT) primer is used to reverse-transcribe mRNA with poly-A tails into cDNA. The GEMs are then broken and the pooled cDNA (from all barcoded cells) is amplified by PCR. Finally, the cDNA is fragmented and another Illumina adapter is ligated at the other end of the molecule. The final library is composed of a read containing the cell-specific barcode (used to identify reads from different cells) and a molecule-specific UMI (used to quantify a gene's expression), while the second read contains sequence from the actual cDNA molecule and can be used to align it to a reference transcriptome. (source: [Chromium Next GEMSingle Cell 3ʹ User Guide](https://assets.ctfassets.net/an68im79xiti/1C16trEdzy1Folq5xbOijE/7e6fb1f504e130bd561d898384da99d9/CG000315_ChromiumNextGEMSingleCell3-_GeneExpression_v3.1_DualIndex__RevB.pdf))](figures/chromium_library.svg)
+![Protocol overview of 3' libraries using the _10X Chromium_ protocol. Cells are captured in individual oil droplets containing a bead (called GEMs). An individual bead contains adapters with a common barcode, but diverse and distinct _Unique Molecular Identifier_ (UMI) sequences. A poly(dT) primer is used to reverse-transcribe mRNA with poly-A tails into cDNA. The GEMs are then broken and the pooled cDNA (from all barcoded cells) is amplified by PCR. Finally, the cDNA is fragmented and another Illumina adapter is ligated at the other end of the molecule. The final library is composed of a read containing the cell-specific barcode (used to identify reads from different cells) and a molecule-specific UMI (used to quantify a gene's expression), while the second read contains sequence from the actual cDNA molecule and can be used to align it to a reference transcriptome. (source: [Chromium Next GEMSingle Cell 3ʹ User Guide](https://assets.ctfassets.net/an68im79xiti/1C16trEdzy1Folq5xbOijE/7e6fb1f504e130bd561d898384da99d9/CG000315_ChromiumNextGEMSingleCell3-_GeneExpression_v3.1_DualIndex__RevB.pdf))](figures/chromium_library.png)
 
 :::note
 **5' or 3'?**
@@ -184,7 +182,7 @@ Another way to decide on which method to use, is to rely on studies dedicated to
 For example, a study by [Ding et al. 2020](https://doi.org/10.1038/s41587-020-0465-8) illustrates how low-throughput methods have higher sensitivity compared to high-throughput methods, such as 10x Chromium (Figure below). 
 On the other hand, low-throughput methods did not capture some of the rarer cell types in their samples, leading to an incomplete characterisation of the cell population. 
 
-![Transcript detection sensitivity of different methods in a commercial mixture of peripheral blood mononuclear cells (PBMCs). The figure is taken from [Ding et al.](https://doi.org/10.1038/s41587-020-0465-8) and shows a) the number of distinct UMIs detected per cell (for methods using tag-based transcript quantification) and b) the number of detected genes per cell across methods. Results from two experimental replicates are shown.](https://media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41587-020-0465-8/MediaObjects/41587_2020_465_Fig3_HTML.png?as=webp)
+![Transcript detection sensitivity of different methods in a commercial mixture of peripheral blood mononuclear cells (PBMCs). The figure is taken from [Ding et al.](https://doi.org/10.1038/s41587-020-0465-8) and shows a) the number of distinct UMIs detected per cell (for methods using tag-based transcript quantification) and b) the number of detected genes per cell across methods. Results from two experimental replicates are shown.](figures/methods_sensitivity.png)
 
 Another study by Ziegenhain et al. [@Ziegenhain2017-cu] compared five different protocols on the same sample of mouse embryonic stem cells (mESCs), reaching similar conclusions. 
 And finally, a study by Svensson et al. [@Svensson2017-op] used synthetic transcripts (spike-ins) with known concentrations to measure the accuracy and sensitivity of different protocols. Comparing a wide range of studies, they also reported substantial differences between the protocols (Figure below).
@@ -219,7 +217,7 @@ However, as we shall see in this course, it is possible to alleviate some of the
 Another important aspect to take into account are **batch effects**. 
 These can be observed even when sequencing the same material using different technologies (figure below), and if not properly normalised, can lead to incorrect conclusions. 
 
-![The same cell population was sequenced with three different single-cell protocols (colours). Adapted from [Zhang et al.](https://doi.org/10.1016/j.molcel.2018.10.020).](figures/batch_effect_protocols.svg)
+![The same cell population was sequenced with three different single-cell protocols (colours). Adapted from [Zhang et al.](https://doi.org/10.1016/j.molcel.2018.10.020).](figures/batch_effect_protocols.png)
 
 The processing of samples should also be done in a manner that avoids **confounding** between experimentally controlled variables (such as a treatment, a genotype or a disease state) and the time when the samples are prepared and sequenced. 
 For example, if planning an experiment to compare healthy and diseased tissues from 10 patients each, if only 10 samples can be processed per day, it is best to do 5 healthy + 5 diseased together each day, rather than prepare all healthy samples one day and all diseased samples in another (figure). 

@@ -1,6 +1,22 @@
 --- 
 title: "Analysis of single cell RNA-seq data"
-author: "Alexander Predeus (<a href = 'https://twitter.com/apredeus'>apredeus</a>), Hugo Tavares (<a href = 'https://tavareshugo.github.io/cv/'>tavareshugo</a>), Simon Murray (<a href = 'https://github.com/SimonDMurray'>simondmurray</a>), Vladimir Kiselev (<a href = 'https://twitter.com/wikiselev'>wikiselev</a>), Tallulah Andrews (<a href = 'https://twitter.com/talandrews'>talandrews</a>), Jennifer Westoby (<a href = 'https://twitter.com/Jenni_Westoby'>Jenni_Westoby</a>), Davis McCarthy (<a href = 'https://twitter.com/davisjmcc'>davisjmcc</a>), Maren Büttner (<a href = 'https://twitter.com/marenbuettner'>marenbuettner</a>), Jimmy Lee (<a href = 'https://twitter.com/THJimmyLee'>THJimmyLee</a>), Krzysztof Polanski, Sebastian Y. Müller, Elo Madissoon, Stephane Ballereau, Maria Do Nascimento Lopes Primo, Rocio Martinez Nunez and Martin Hemberg (<a href = 'https://twitter.com/m_hemberg'>m_hemberg</a>)"
+author: 
+  - Alexander Predeus (<a href = 'https://twitter.com/apredeus'>apredeus</a>)
+  - Hugo Tavares (<a href = 'https://tavareshugo.github.io/cv/'>tavareshugo</a>)
+  - Simon Murray (<a href = 'https://github.com/SimonDMurray'>simondmurray</a>)
+  - Vladimir Kiselev (<a href = 'https://twitter.com/wikiselev'>wikiselev</a>)
+  - Tallulah Andrews (<a href = 'https://twitter.com/talandrews'>talandrews</a>)
+  - Jennifer Westoby (<a href = 'https://twitter.com/Jenni_Westoby'>Jenni_Westoby</a>)
+  - Davis McCarthy (<a href = 'https://twitter.com/davisjmcc'>davisjmcc</a>)
+  - Maren Büttner (<a href = 'https://twitter.com/marenbuettner'>marenbuettner</a>)
+  - Jimmy Lee (<a href = 'https://twitter.com/THJimmyLee'>THJimmyLee</a>)
+  - Krzysztof Polanski
+  - Sebastian Y. Müller
+  - Elo Madissoon
+  - Stephane Ballereau
+  - Maria Do Nascimento Lopes Primo
+  - Rocio Martinez Nunez
+  - Martin Hemberg (<a href = 'https://twitter.com/m_hemberg'>m_hemberg</a>)
 date: "`r Sys.Date()`"
 knit: "bookdown::render_book"
 split_by: none
@@ -11,6 +27,12 @@ biblio-style: apalike
 link-citations: yes
 always_allow_html: yes
 ---
+
+```{r Index0, echo=FALSE}
+library(knitr)
+library(formatR)
+opts_chunk$set(cache = TRUE, fig.align = "center", echo=FALSE, tidy.opts=list(width.cutoff=80), tidy=TRUE)
+```
 
 # About the course
 

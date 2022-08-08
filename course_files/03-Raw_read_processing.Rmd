@@ -6,7 +6,7 @@ output: html_document
 
 ```{r Intro0, echo=FALSE}
 library(knitr)
-knitr::opts_chunk$set(cache = TRUE, fig.align = "center", echo=FALSE)
+opts_chunk$set(cache = TRUE, fig.align = "center", echo=FALSE)
 ```
 
 ## Reference Genome and its Annotation

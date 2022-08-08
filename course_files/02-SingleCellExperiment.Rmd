@@ -8,7 +8,7 @@ output:
 
 ```{r Intro0, echo=FALSE}
 library(knitr)
-opts_chunk$set(cache = TRUE, fig.align = "center", echo=TRUE)
+opts_chunk$set(cache = TRUE, fig.align = "center", echo=FALSE, tidy.opts=list(width.cutoff=80), tidy=TRUE)
 ```
 
 :::highlight
@@ -54,7 +54,7 @@ A couple of things that are missing from these materials:
 There are several possible software packages (or package "ecosystems") that can be used for single-cell analysis.
 In this course we're going to focus on a collection of packages that are part of the **_Bioconductor_** project.
 
-![](https://www.bioconductor.org/images/logo/jpg/bioconductor_logo_rgb.jpg){ width=30% }
+![](figures/bioconductor_logo_rgb.jpg){ width=30% }
 
 _Bioconductor_ is a repository of _R_ packages specifically developed for biological analyses. 
 It has an excellent collection of packages for scRNA-seq analysis, which are summarised in the [Orchestrating Single-Cell Analysis with Bioconductor](https://bioconductor.org/books/release/OSCA/) book.
@@ -63,11 +63,11 @@ _Bioconductor_ also encourages utilization of standard data structures/classes a
 For scRNA-seq specifically, the standard data object used is called **`SingleCellExperiment`**, which we will learn more about in this section. 
 
 
-![](https://satijalab.org/seurat/articles/assets/seurat_banner.jpg){ width=50% }
+![](figures/seurat_banner.jpg){ width=50% }
 
 [Seurat](https://satijalab.org/seurat/) is another popular _R_ package that uses its own data object called `Seurat`. The _Seurat_ package includes a very large collection of functions and excellent documentation. Because of its popularity, several other packages nowadays are also compatible with the `Seurat` object. Although not the main focus of this course, we have a section illustrating an analysis workflow using this package: [Analysis of scRNA-seq with Seurat]().
 
-![](https://scanpy.readthedocs.io/en/stable/_static/Scanpy_Logo_BrightFG.svg){ width=30% }
+![](figures/scanpy_logo.png){ width=30% }
 
 [Scanpy](https://scanpy.readthedocs.io/en/stable/) is a popular python package for scRNA-seq analysis, which stores data in an object called `AnnData` (annotated data). Similarly to _Seurat_ and _Bioconductor_, developers can write extensions to the main package compatible with the `AnnData` package, allowing the community to expand on the functionality. 
 
@@ -99,7 +99,7 @@ The different parts of the object are referred to as "slots":
 - Information about the genes (the rows of the object) - stored in the `rowData` slot.
 - Information about the cells (the columns of the object) - stored in the `colData` slot.
 
-![The `SingleCellExperiment` object. Features (e.g. genes, isoforms or exons) are stored as rows and their metadata is in a `rowData` slot. Cells are stored as columns, with their metadata in `colData` slot. Matrices of expression are stored in the `assay` slots. Dimensionality reduction projections of the cells are stored in the `reducedDim` slots.](https://raw.githubusercontent.com/Bioconductor/OSCABase/images/images/SingleCellExperiment.png)
+![The `SingleCellExperiment` object. Features (e.g. genes, isoforms or exons) are stored as rows and their metadata is in a `rowData` slot. Cells are stored as columns, with their metadata in `colData` slot. Matrices of expression are stored in the `assay` slots. Dimensionality reduction projections of the cells are stored in the `reducedDim` slots.](figures/singlecellexperiment.png)
 
 
 ### Creating SCE Objects
