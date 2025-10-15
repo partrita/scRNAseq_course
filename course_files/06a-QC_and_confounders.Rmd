@@ -2,26 +2,26 @@
 output: html_document
 ---
 
-# Basic Quality Control (QC) and Exploration of scRNA-seq Datasets
+# scRNA-seq 데이터 세트의 기본 품질 관리(QC) 및 탐색
 
-## Dataset Contruction and QC
+## 데이터 세트 구성 및 QC
 
-### Introduction
+### 소개
 
-Once gene expression has been quantified it is summarized as an __expression matrix__ where each row corresponds to a gene (or transcript) and each column corresponds to a single cell. In the next step, the matrix should be examined to remove poor quality cells. Failure to remove low quality cells at this stage may add technical noise which has the potential to obscure the biological signals of interest in the downstream analysis. 
+유전자 발현이 정량화되면 각 행이 유전자(또는 전사체)에 해당하고 각 열이 단일 세포에 해당하는 __발현 행렬__로 요약됩니다. 다음 단계에서는 행렬을 검사하여 품질이 낮은 세포를 제거해야 합니다. 이 단계에서 품질이 낮은 세포를 제거하지 못하면 다운스트림 분석에서 관심 있는 생물학적 신호를 가릴 수 있는 기술적 노이즈가 추가될 수 있습니다.
 
-Since there is currently no standard method for performing scRNA-seq, the expected values for the various QC measures that will be presented here can vary substantially from experiment to experiment. Thus, to perform QC we will be looking for cells which are outliers with respect to the rest of the dataset rather than comparing to independent quality standards. Consequently, care should be taken when comparing quality metrics across datasets sequenced using different protocols.
+현재 scRNA-seq를 수행하는 표준 방법이 없기 때문에 여기에서 제시될 다양한 QC 측정값에 대한 예상 값은 실험마다 크게 다를 수 있습니다. 따라서 QC를 수행하기 위해 독립적인 품질 표준과 비교하는 대신 데이터 세트의 나머지 부분에 대해 이상치인 세포를 찾을 것입니다. 결과적으로 다른 프로토콜을 사용하여 시퀀싱된 데이터 세트 간에 품질 지표를 비교할 때 주의해야 합니다.
 
-### Tung Dataset
+### Tung 데이터 세트
 
-To illustrate cell QC, we consider a [dataset](http://jdblischak.github.io/singleCellSeq/analysis/) of induced pluripotent stem cells generated from three different individuals [@Tung2017-ba] in [Yoav Gilad](http://giladlab.uchicago.edu/)'s lab at the University of Chicago. The experiments were carried out on the Fluidigm C1 platform and to facilitate the quantification both unique molecular identifiers (UMIs) and ERCC _spike-ins_ were used. Due to rapid increase in droplet-based method use, spike-ins are not widely used anymore; however, they can serve as an informative control for low throughput methods. The data files are located in the `tung` folder in your working directory. These files are the copies of the original files made on the 15/03/16. We will use these copies for reproducibility purposes.
+세포 QC를 설명하기 위해, 시카고 대학교의 [Yoav Gilad](http://giladlab.uchicago.edu/) 연구실에서 세 명의 다른 개인[@Tung2017-ba]으로부터 생성된 유도 만능 줄기 세포의 [데이터 세트](http://jdblischak.github.io/singleCellSeq/analysis/)를 고려합니다. 실험은 Fluidigm C1 플랫폼에서 수행되었으며 정량화를 용이하게 하기 위해 고유 분자 식별자(UMI)와 ERCC _스파이크인_이 모두 사용되었습니다. 방울 기반 방법의 급격한 증가로 인해 스파이크인은 더 이상 널리 사용되지 않지만 저처리량 방법에 대한 유익한 제어 역할을 할 수 있습니다. 데이터 파일은 작업 디렉토리의 `tung` 폴더에 있습니다. 이 파일은 15/03/16에 만들어진 원본 파일의 사본입니다. 재현성을 위해 이 사본을 사용할 것입니다.
 
 ```{r exprs-qc0, echo=FALSE}
 library(knitr)
 opts_chunk$set(cache = TRUE, out.width='100%', fig.align = 'center')
 ```
 
-We'll use `scater` package, as well as `AnnotationDbi` and `org.Hs.eg.db` to convert ENSEMBL IDs into gene names (symbols). 
+`scater` 패키지와 `AnnotationDbi` 및 `org.Hs.eg.db`를 사용하여 ENSEMBL ID를 유전자 이름(기호)으로 변환합니다.
 
 ```{r exprs-qc1, message=FALSE, warning=FALSE}
 library(scater)
@@ -31,21 +31,21 @@ library(org.Hs.eg.db)
 library(EnsDb.Hsapiens.v86)
 ```
 
-Next we'll read in the matrix and the per-cell annotation. The latter is converted to factors on the fly.
+다음으로 행렬과 세포별 주석을 읽어들입니다. 후자는 즉시 요인으로 변환됩니다.
 
 ```{r exprs-qc2}
 molecules <- read.delim("data/tung/molecules.txt",row.names=1)
 annotation <- read.delim("data/tung/annotation.txt",stringsAsFactors = T)
 ```
 
-Take a quick look at the dataset: 
+데이터 세트를 간단히 살펴보십시오.
 
 ```{r exprs-qc3}
 head(molecules[,1:3])
 head(annotation)
 ```
 
-Here we set `altExp` to contain ERCC, removing ERCC features from the main object:
+여기서 `altExp`를 ERCC를 포함하도록 설정하여 주 객체에서 ERCC 특징을 제거합니다.
 
 ```{r exprs-qc4}
 umi <- SingleCellExperiment(assays = list(counts = as.matrix(molecules)), colData = annotation)
@@ -53,7 +53,7 @@ altExp(umi,"ERCC") <- umi[grep("^ERCC-",rownames(umi)), ]
 umi <- umi[grep("^ERCC-",rownames(umi),invert = T), ]
 ```
 
-Now, let's map ENSEMBL IDs to gene symbols. From the `table` command, we can see that most genes were annotated; however, 846 returned "NA". By default, `mapIds` returs one symbol per ID; this behaviour can be changed using `multiVals` argument. 
+이제 ENSEMBL ID를 유전자 기호에 매핑해 보겠습니다. `table` 명령에서 대부분의 유전자가 주석 처리되었음을 알 수 있습니다. 그러나 846개는 "NA"를 반환했습니다. 기본적으로 `mapIds`는 ID당 하나의 기호를 반환합니다. 이 동작은 `multiVals` 인수를 사용하여 변경할 수 있습니다.
 
 ```{r exprs-qc4b}
 gene_names <- mapIds(org.Hs.eg.db, keys=rownames(umi), keytype="ENSEMBL", columns="SYMBOL",column="SYMBOL")
@@ -61,37 +61,37 @@ rowData(umi)$SYMBOL <- gene_names
 table(is.na(gene_names))
 ```
 
-Let's remove all genes for which no symbols were found: 
+기호가 발견되지 않은 모든 유전자를 제거해 보겠습니다.
 
 ```{r}
 umi <- umi[! is.na(rowData(umi)$SYMBOL),]
 ```
 
-Let's check if we can find mitochondrial proteins in the newly annotated symbols.
+새로 주석 처리된 기호에서 미토콘드리아 단백질을 찾을 수 있는지 확인해 보겠습니다.
 
 ```{r}
 grep("^MT-",rowData(umi)$SYMBOL,value = T)
 ```
 
-Strangely, this returns nothing. Similar command to find ribosomal proteins (which start with RPL or RPS) works as expected:
+이상하게도 이것은 아무것도 반환하지 않습니다. 리보솜 단백질(RPL 또는 RPS로 시작)을 찾는 유사한 명령은 예상대로 작동합니다.
 
 ```{r}
 grep("^RP[LS]",rowData(umi)$SYMBOL,value = T)
 ```
 
-Quick search for mitochondrial protein *ATP8*, which is also called *MT-ATP8*, shows that the name does not contain "MT-". However, the correct feature (ENSEMBL ID *ENSG00000228253*) is present in our annotation.
+*MT-ATP8*이라고도 하는 미토콘드리아 단백질 *ATP8*을 빠르게 검색하면 이름에 "MT-"가 포함되어 있지 않음을 알 수 있습니다. 그러나 올바른 특징(ENSEMBL ID *ENSG00000228253*)은 주석에 있습니다.
 
 ```{r}
 grep("ATP8",rowData(umi)$SYMBOL,value = T)
 ```
 
-Most modern annotations, e.g. ones used by `Cell Ranger`, will have mitochondrial genes names that start with *MT-*. For some reason, the one we have found does not. Annotation problems in general are very common and should be always considered carefully. In our case, we also can't find the location of genes since chromosomes are not supported in `org.Hs.eg.db` - there are no genome location columns in this database:
+`Cell Ranger`에서 사용하는 것과 같은 대부분의 최신 주석에는 *MT-*로 시작하는 미토콘드리아 유전자 이름이 있습니다. 어떤 이유에서인지 우리가 찾은 것은 그렇지 않습니다. 일반적으로 주석 문제는 매우 일반적이며 항상 신중하게 고려해야 합니다. 우리의 경우, `org.Hs.eg.db`에서 염색체가 지원되지 않기 때문에 유전자의 위치를 찾을 수도 없습니다. 이 데이터베이스에는 게놈 위치 열이 없습니다.
 
 ```{r}
 columns(org.Hs.eg.db)
 ```
 
-Let's try a different, more detailed database - `EnsDb.Hsapiens.v86`. Using this resource, we can find 13 protein-coding genes located in the mitochondrion:  
+더 자세한 데이터베이스인 `EnsDb.Hsapiens.v86`을 시도해 보겠습니다. 이 리소스를 사용하여 미토콘드리아에 위치한 13개의 단백질 코딩 유전자를 찾을 수 있습니다.
 
 ```{r exprs-qc5}
 ensdb_genes <- genes(EnsDb.Hsapiens.v86)
@@ -101,9 +101,9 @@ table(is_mito)
 ```
 
 
-### Basic QC
+### 기본 QC
 
-The following `scater` functions allow us to add per-cell and per-gene metrics useful for dataset evaluation. Most popular metrics per cell are total number of counts (UMIs), total number of detected genes, total number of mitochondrial counts, percent of mitochondrial counts, etc. 
+다음 `scater` 함수를 사용하면 데이터 세트 평가에 유용한 세포별 및 유전자별 메트릭을 추가할 수 있습니다. 세포당 가장 인기 있는 메트릭은 총 카운트 수(UMI), 총 검출된 유전자 수, 총 미토콘드리아 카운트 수, 미토콘드리아 카운트 비율 등입니다.
 
 ```{r exprs-qc6}
 umi_cell <- perCellQCMetrics(umi,subsets=list(Mito=is_mito))
@@ -112,14 +112,14 @@ head(umi_cell)
 head(umi_feature)
 ```
 
-We can now use the functions that add the metrics calculated above to per-cell and per-gene metadata:
+이제 위에서 계산된 메트릭을 세포별 및 유전자별 메타데이터에 추가하는 함수를 사용할 수 있습니다.
 
 ```{r exprs-qc6b}
 umi <- addPerCellQC(umi, subsets=list(Mito=is_mito))
 umi <- addPerFeatureQC(umi)
 ```
 
-Manual filtering can use any cutoff we choose. In order to find a good value, it's good to look at the distribution:
+수동 필터링은 우리가 선택한 모든 컷오프를 사용할 수 있습니다. 좋은 값을 찾기 위해 분포를 살펴보는 것이 좋습니다.
 
 ```{r exprs-qc7}
 hist(
@@ -137,7 +137,7 @@ hist(
 abline(v = 7000, col = "red")
 ```
 
-Sometimes it's hard to come up with an obvious filtering cutoff. In this case, adaptive threshold can help us identify points that are more than 3 [median absolute deviations](https://en.wikipedia.org/wiki/Median_absolute_deviation) (MADs) away from the median in any of the variables we use for QC. Be careful to specify if the correct direction of the deviation: indeed, low number of detected genes, but high MT gene percentage, are hallmarks of a low quality cell:
+때로는 명백한 필터링 컷오프를 생각해 내기가 어렵습니다. 이 경우 적응형 임계값은 QC에 사용하는 변수 중 하나에서 중앙값에서 3 [중앙값 절대 편차](https://en.wikipedia.org/wiki/Median_absolute_deviation)(MAD) 이상 떨어진 점을 식별하는 데 도움이 될 수 있습니다. 편차의 올바른 방향을 지정하는 데 주의하십시오. 실제로 검출된 유전자 수가 적고 MT 유전자 비율이 높은 것은 품질이 낮은 세포의 특징입니다.
 
 ```{r exprs-qc9}
 qc.lib2 <- isOutlier(umi_cell$sum, log=TRUE, type="lower")
@@ -152,20 +152,20 @@ discard2 <- qc.lib2 | qc.nexprs2 | qc.spike2 | qc.mito2
 DataFrame(LibSize=sum(qc.lib2), NExprs=sum(qc.nexprs2), SpikeProp=sum(qc.spike2), MitoProp=sum(qc.mito2), Total=sum(discard2))
 ```
 
-All the actions performed above could be done in one `scater` command, `quickPerCellQC`:
+위에서 수행한 모든 작업은 하나의 `scater` 명령인 `quickPerCellQC`로 수행할 수 있습니다.
 
 ```{r exprs-qc10}
 reasons <- quickPerCellQC(umi_cell, sub.fields=c("subsets_Mito_percent", "altexps_ERCC_percent"))
 colSums(as.matrix(reasons))
 ```
 
-Let's add another metadata column that would keep the information about whether a cell is discarded or not: 
+세포가 폐기되었는지 여부에 대한 정보를 유지하는 또 다른 메타데이터 열을 추가해 보겠습니다.
 
 ```{r exprs-qc11}
 umi$discard <- reasons$discard
 ```
 
-Plotting various coldata (cell-level medadata) assays against each other allows us to illustrate the dependencies between them. For example, cells with high mitochondrial content usually are considered dead or dying; these cells also usually have low overall UMI counts and number of detected genes. 
+다양한 coldata(세포 수준 메타데이터) 분석을 서로에 대해 플로팅하면 그들 사이의 종속성을 설명할 수 있습니다. 예를 들어, 미토콘드리아 함량이 높은 세포는 일반적으로 죽거나 죽어가는 것으로 간주됩니다. 이러한 세포는 또한 일반적으로 전체 UMI 카운트와 검출된 유전자 수가 적습니다.
 
 ```{r exprs-qc12}
 plotColData(umi, x="sum", y="subsets_Mito_percent", colour_by="discard")
@@ -173,7 +173,7 @@ plotColData(umi, x="sum", y="detected", colour_by="discard")
 plotColData(umi, x="altexps_ERCC_percent", y="subsets_Mito_percent",colour_by="discard")
 ```
 
-We can also plot coldata with splitting by batches to see if there are substantial batch-specific differences: 
+배치별로 분할하여 coldata를 플로팅하여 상당한 배치별 차이가 있는지 확인할 수도 있습니다.
 
 ```{r exprs-qc13}
 library(scales)
@@ -183,16 +183,16 @@ plotColData(umi, x="sum", y="detected", colour_by="discard", other_fields = "rep
   facet_wrap(~replicate)  + scale_x_continuous(labels = unit_format(unit = "k", scale = 1e-3))
 ```
 
-### Highly Expressed Genes
+### 고발현 유전자
 
-Let's take a look at the most expressed genes in the whole dataset. We will use symbols we obtained above. Most of the genes we see are mitochondrial or ribosomal proteins, which is pretty typical for most scRNA-seq datasets. 
+전체 데이터 세트에서 가장 많이 발현되는 유전자를 살펴보겠습니다. 위에서 얻은 기호를 사용할 것입니다. 우리가 보는 대부분의 유전자는 미토콘드리아 또는 리보솜 단백질이며, 이는 대부분의 scRNA-seq 데이터 세트에서 매우 일반적입니다.
 
 ```{r exprs-qc14}
 plotHighestExprs(umi, exprs_values = "counts", 
                  feature_names_to_plot = "SYMBOL", colour_cells_by="detected")
 ```
 
-Let's keep the genes which were detected (expression value > 1) in 2 or more cells. We'll discard approximately 4,000 weakly expressed genes. 
+2개 이상의 세포에서 검출된(발현 값 > 1) 유전자를 유지하겠습니다. 약 4,000개의 약하게 발현된 유전자를 버릴 것입니다.
 
 ```{r exprs-qc15}
 keep_feature <- nexprs(umi,byrow = TRUE,detection_limit = 1) >= 2
@@ -200,139 +200,139 @@ rowData(umi)$discard <- ! keep_feature
 table(rowData(umi)$discard)
 ``` 
 
-Let's make a new assay, `logcounts_raw`, which will contain log2-transformed counts with added pseudocount of 1.
+1의 의사 카운트가 추가된 로그2 변환 카운트를 포함할 새 분석인 `logcounts_raw`를 만들어 보겠습니다.
 
 ```{r exprs-qc16}
 assay(umi, "logcounts_raw") <- log2(counts(umi) + 1)
 ```
 
-Finally, let's save the `SingleCellExperiment` object with all the fields we have added to the per-cell metadata, and new assays (`logcounts_raw`):
+마지막으로, 세포별 메타데이터에 추가한 모든 필드와 새 분석(`logcounts_raw`)이 포함된 `SingleCellExperiment` 객체를 저장해 보겠습니다.
 
 ```{r exprs-qc17}
 saveRDS(umi, file = "data/tung/umi.rds")
 ```
 
-## Data Visualization and Dimensionality Reduction
+## 데이터 시각화 및 차원 축소
 
-### Introduction
+### 소개
 
-In this chapter we will continue to work with the filtered `Tung` dataset produced in the previous chapter. We will explore different ways of visualizing the data to allow you to asses what happened to the expression matrix after the quality control step. `scater` package provides several very useful functions to simplify visualisation. 
+이 장에서는 이전 장에서 생성된 필터링된 `Tung` 데이터 세트로 계속 작업할 것입니다. 품질 관리 단계 후 발현 행렬에 어떤 일이 일어났는지 평가할 수 있도록 데이터를 시각화하는 다양한 방법을 탐색할 것입니다. `scater` 패키지는 시각화를 단순화하기 위해 몇 가지 매우 유용한 함수를 제공합니다.
 
-One important aspect of single-cell RNA-seq is to control for batch effects. Batch effects are technical artefacts that are added to the samples during handling. For example, if two sets of samples were prepared in different labs or even on different days in the same lab, then we may observe greater similarities between the samples that were handled together. In the worst case scenario, batch effects may be [mistaken](http://f1000research.com/articles/4-121/v1) for true biological variation. The `Tung` data allows us to explore these issues in a controlled manner since some of the salient aspects of how the samples were handled have been recorded. Ideally, we expect to see batches from the same individual grouping together and distinct groups corresponding to each individual. 
+단일 세포 RNA-seq의 한 가지 중요한 측면은 배치 효과를 제어하는 것입니다. 배치 효과는 샘플을 처리하는 동안 샘플에 추가되는 기술적 인공물입니다. 예를 들어, 두 세트의 샘플이 다른 실험실에서 또는 같은 실험실에서 다른 날에 준비된 경우 함께 처리된 샘플 간에 더 큰 유사성을 관찰할 수 있습니다. 최악의 경우 배치 효과가 실제 생물학적 변동으로 [오인](http://f1000research.com/articles/4-121/v1)될 수 있습니다. `Tung` 데이터를 사용하면 샘플이 처리된 방식의 일부 두드러진 측면이 기록되었기 때문에 이러한 문제를 통제된 방식으로 탐색할 수 있습니다. 이상적으로는 동일한 개체에서 온 배치가 함께 그룹화되고 각 개체에 해당하는 별개의 그룹을 볼 수 있을 것으로 예상합니다.
 
-Let's create another `SingleCellExperiment` object, `umi.qc`, in which remove unnecessary poorly expressed genes and low quality cells.
+불필요하게 약하게 발현된 유전자와 품질이 낮은 세포를 제거하는 또 다른 `SingleCellExperiment` 객체인 `umi.qc`를 만들어 보겠습니다.
 
 ```{r exprs-over1}
 umi.qc <- umi[! rowData(umi)$discard,! colData(umi)$discard]
 ```
 
-### PCA plot
+### PCA 플롯
 
-The easiest way to overview the data is by transforming it using the principal component analysis and then visualize the first two principal components.
+데이터를 개관하는 가장 쉬운 방법은 주성분 분석을 사용하여 변환한 다음 처음 두 주성분을 시각화하는 것입니다.
 
-[Principal component analysis (PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis) is a statistical procedure that uses a transformation to convert a set of observations into a set of linearly uncorrelated (orthogonal) variables called principal components (PCs). The number of principal components is less than or equal to the number of original variables.
+[주성분 분석(PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis)은 변환을 사용하여 관측치 집합을 주성분(PC)이라고 하는 선형적으로 상관되지 않은(직교) 변수 집합으로 변환하는 통계적 절차입니다. 주성분의 수는 원래 변수의 수보다 작거나 같습니다.
 
-Mathematically, the PCs correspond to the [eigenvectors](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors) of the covariance matrix. The eigenvectors are sorted by eigenvalue so that the first principal component accounts for as much of the variability in the data as possible, and each succeeding component in turn has the highest variance possible under the constraint that it is orthogonal to the preceding components (the figure below is taken from [here](http://www.nlpca.org/pca_principal_component_analysis.html)).
+수학적으로 PC는 공분산 행렬의 [고유 벡터](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors)에 해당합니다. 고유 벡터는 고유값으로 정렬되므로 첫 번째 주성분은 데이터의 변동성을 가능한 한 많이 설명하고, 각 후속 성분은 차례로 이전 성분에 직교한다는 제약 조건 하에서 가능한 가장 높은 분산을 가집니다(아래 그림은 [여기](http://www.nlpca.org/pca_principal_component_analysis.html)에서 가져옴).
 
-```{r exprs-over2, echo=FALSE, fig.cap="Schematic representation of PCA dimensionality reduction", out.width='100%'}
+```{r exprs-over2, echo=FALSE, fig.cap="PCA 차원 축소의 개략도", out.width='100%'}
 knitr::include_graphics("figures/pca.png")
 ```
 
-#### Before QC
+#### QC 전
 
-Without log-transformation or normalization, PCA plot fails to separate the datasets by replicate or individual. We mostly see the effects of sequencing depth - samples (cells) with lots of expression, and particularly highly expressed genes, dominate the PCs: 
+로그 변환이나 정규화 없이 PCA 플롯은 데이터 세트를 복제 또는 개체별로 분리하지 못합니다. 우리는 주로 시퀀싱 깊이의 영향을 봅니다. 많은 발현, 특히 고발현 유전자를 가진 샘플(세포)이 PC를 지배합니다.
 
-```{r exprs-over3, fig.cap = "PCA plot of the Tung data (raw counts)"}
+```{r exprs-over3, fig.cap = "Tung 데이터의 PCA 플롯(원시 카운트)"}
 umi <- runPCA(umi, exprs_values = "counts")
 dim(reducedDim(umi, "PCA"))
 plotPCA(umi, colour_by = "batch", size_by = "detected", shape_by = "individual")
 ```
 
-With log-transformation, we equalize the large difference between strongly and weakly expressed genes, and immediately see cells form groups by replicate, individual, and sequencing depth. When PCA is re-run, reducedDim object in `umi` is overwritten. 
+로그 변환을 사용하면 강하게 발현된 유전자와 약하게 발현된 유전자 간의 큰 차이를 균등화하고 즉시 세포가 복제, 개체 및 시퀀싱 깊이별로 그룹을 형성하는 것을 볼 수 있습니다. PCA가 다시 실행되면 `umi`의 reducedDim 객체가 덮어쓰여집니다.
 
-```{r exprs-over4, fig.cap = "PCA plot of the tung data (non-normalized logcounts)"}
+```{r exprs-over4, fig.cap = "tung 데이터의 PCA 플롯(정규화되지 않은 logcounts)"}
 umi <- runPCA(umi, exprs_values = "logcounts_raw")
 dim(reducedDim(umi, "PCA"))
 plotPCA(umi, colour_by = "batch", size_by = "detected", shape_by = "individual")
 ```
 
-Clearly log-transformation is benefitial for our data - it reduces the variance on the first principal component and already separates some biological effects. Moreover, it makes the distribution of the expression values more normal. In the following analysis and chapters we will be using log-transformed raw counts by default.
+분명히 로그 변환은 우리 데이터에 유익합니다. 첫 번째 주성분의 분산을 줄이고 이미 일부 생물학적 효과를 분리합니다. 또한 발현 값의 분포를 더 정상적으로 만듭니다. 다음 분석 및 장에서는 기본적으로 로그 변환된 원시 카운트를 사용할 것입니다.
 
-__However, note that just a log-transformation is not enough to account for different technical factors between the cells (e.g. sequencing depth). Therefore, please do not use `logcounts_raw` for your downstream analysis, instead as a minimum suitable data use the `logcounts` slot of the `SingleCellExperiment` object, which not just log-transformed, but also normalised by library size (e.g. CPM normalisation). In the course we use `logcounts_raw` only for demonstration purposes!__
+__그러나 로그 변환만으로는 세포 간의 다른 기술적 요인(예: 시퀀싱 깊이)을 설명하기에 충분하지 않다는 점에 유의하십시오. 따라서 다운스트림 분석에 `logcounts_raw`를 사용하지 말고, 대신 최소한 적합한 데이터로 `SingleCellExperiment` 객체의 `logcounts` 슬롯을 사용하십시오. 이 슬롯은 로그 변환되었을 뿐만 아니라 라이브러리 크기(예: CPM 정규화)로 정규화되었습니다. 이 과정에서는 `logcounts_raw`를 데모 목적으로만 사용합니다!__
 
-#### After QC
+#### QC 후
 
-Let's do the same analysis as above, but using `umi.qc` dataframe instead of the full `umi`: 
+위와 동일한 분석을 수행하지만 전체 `umi` 대신 `umi.qc` 데이터 프레임을 사용해 보겠습니다.
 
-```{r exprs-over5, fig.cap = "PCA plot of the Tung data (non-normalized log counts, QC-filtered)"}
+```{r exprs-over5, fig.cap = "Tung 데이터의 PCA 플롯(정규화되지 않은 로그 카운트, QC 필터링)"}
 umi.qc <- runPCA(umi.qc, exprs_values = "logcounts_raw")
 dim(reducedDim(umi.qc, "PCA"))
 plotPCA(umi.qc, colour_by = "batch", size_by = "detected", shape_by = "individual")
 ```
 
-Comparing figures above, it is clear that after quality control the NA19098.r2 cells no longer form a group of outliers.
+위 그림을 비교하면 품질 관리 후 NA19098.r2 세포가 더 이상 이상치 그룹을 형성하지 않는다는 것이 분명합니다.
 
-By default only the top 500 most variable genes are used by `scater` to calculate the PCA. This can be adjusted by changing the `ntop` argument. 
+기본적으로 `scater`는 PCA를 계산하는 데 상위 500개의 가장 변동이 심한 유전자만 사용합니다. 이것은 `ntop` 인수를 변경하여 조정할 수 있습니다.
 
-**Exercise 1**
-How do the PCA plots change if when all 14,154 genes are used? Or when only top 50 genes are used? Why does the fraction of variance accounted for by the first PC change so dramatically?
+**연습 1**
+14,154개의 모든 유전자를 사용하면 PCA 플롯이 어떻게 변합니까? 또는 상위 50개의 유전자만 사용하면 어떻게 됩니까? 첫 번째 PC가 설명하는 분산의 비율이 왜 그렇게 극적으로 변합니까?
 
-__Hint__ Use `ntop` argument of the `plotPCA` function.
+__힌트__ `plotPCA` 함수의 `ntop` 인수를 사용하십시오.
 
-<details><summary>Answer</summary>
+<details><summary>답</summary>
 
-```{r exprs-over6, fig.cap = "PCA plot of the tung data (14214 genes)"}
+```{r exprs-over6, fig.cap = "tung 데이터의 PCA 플롯(14214개 유전자)"}
 umi.qc <- runPCA(umi.qc, exprs_values = "logcounts_raw",ntop = nrow(umi.qc))
 plotPCA(umi.qc, colour_by = "batch", size_by = "detected", shape_by = "individual")
 ```
 
-```{r exprs-over7, expr-overview-pca-after-qc-exercise1-2, fig.cap = "PCA plot of the tung data (50 genes)"}
+```{r exprs-over7, expr-overview-pca-after-qc-exercise1-2, fig.cap = "tung 데이터의 PCA 플롯(50개 유전자)"}
 umi.qc <- runPCA(umi.qc, exprs_values = "logcounts_raw",ntop = 50)
 plotPCA(umi.qc, colour_by = "batch", size_by = "detected", shape_by = "individual")
 ```
 
-If your answers are different please compare your code with [ours](https://github.com/hemberg-lab/scRNA.seq.course/blob/master/07-exprs-overview.Rmd) (you need to search for this exercise in the opened file).
+답이 다른 경우 코드를 [우리 것](https://github.com/hemberg-lab/scRNA.seq.course/blob/master/07-exprs-overview.Rmd)과 비교하십시오(열린 파일에서 이 연습을 검색해야 함).
 </details>
 
-### tSNE Map
+### tSNE 맵
 
-An alternative to PCA for visualizing scRNA-seq data is a tSNE plot. [tSNE](https://lvdmaaten.github.io/tsne/) (t-Distributed Stochastic Neighbor Embedding) combines dimensionality reduction (e.g. PCA) with random walks on the nearest-neighbour network to map high dimensional data (i.e. our 14,154-dimensional expression matrix) to a 2-dimensional space while preserving local distances between cells. In contrast with PCA, tSNE is a stochastic algorithm which means running the method multiple times on the same dataset will result in different plots. Due to the non-linear and stochastic nature of the algorithm, tSNE is more difficult to intuitively interpret tSNE. To ensure reproducibility, we fix the "seed" of the random-number generator in the code below so that we always get the same plot. 
+scRNA-seq 데이터를 시각화하는 PCA의 대안은 tSNE 플롯입니다. [tSNE](https://lvdmaaten.github.io/tsne/)(t-분산 확률적 이웃 임베딩)는 차원 축소(예: PCA)와 최근접 이웃 네트워크에서의 랜덤 워크를 결합하여 고차원 데이터(즉, 14,154차원 발현 행렬)를 세포 간의 지역적 거리를 보존하면서 2차원 공간에 매핑합니다. PCA와 달리 tSNE는 확률적 알고리즘으로, 동일한 데이터 세트에서 여러 번 실행하면 다른 플롯이 생성됩니다. 알고리즘의 비선형 및 확률적 특성으로 인해 tSNE는 직관적으로 해석하기가 더 어렵습니다. 재현성을 보장하기 위해 아래 코드에서 난수 생성기의 "시드"를 고정하여 항상 동일한 플롯을 얻습니다.
 
 
-#### Before QC
+#### QC 전
 
-```{r exprs-over8, fig.cap = "tSNE map of the tung data"}
+```{r exprs-over8, fig.cap = "tung 데이터의 tSNE 맵"}
 set.seed(123456)
 umi <- runTSNE(umi, exprs_values = "logcounts_raw", perplexity = 130)
 plotTSNE(umi, colour_by = "batch", size_by = "detected", shape_by = "individual")
 ```
 
-#### After QC
+#### QC 후
 
-```{r exprs-over9, fig.cap = "tSNE map of the tung data"}
+```{r exprs-over9, fig.cap = "tung 데이터의 tSNE 맵"}
 set.seed(123456)
 umi.qc <- runTSNE(umi.qc, exprs_values = "logcounts_raw", perplexity = 130)
 plotTSNE(umi.qc, colour_by = "batch", size_by = "detected", shape_by = "individual")
 ```
 
-Interpreting PCA and tSNE plots is often challenging and due to their stochastic and non-linear nature, they are less intuitive. However, in this case it is clear that they provide a similar picture of the data. Comparing figures above, it is again clear that the samples from NA19098.r2 are no longer outliers after the QC filtering.
+PCA 및 tSNE 플롯을 해석하는 것은 종종 어렵고 확률적 및 비선형 특성으로 인해 덜 직관적입니다. 그러나 이 경우 데이터에 대한 유사한 그림을 제공한다는 것이 분명합니다. 위 그림을 비교하면 QC 필터링 후 NA19098.r2의 샘플이 더 이상 이상치가 아니라는 것이 다시 분명합니다.
 
-Furthermore tSNE requires you to provide a value of `perplexity` which reflects the number of neighbours used to build the nearest-neighbour network; a high value creates a dense network which clumps cells together while a low value makes the network more sparse allowing groups of cells to separate from each other. `scater` uses a default perplexity of the total number of cells divided by five (rounded down).
+또한 tSNE는 최근접 이웃 네트워크를 구축하는 데 사용되는 이웃 수를 반영하는 `perplexity` 값을 제공해야 합니다. 높은 값은 세포를 함께 뭉치는 밀집된 네트워크를 생성하는 반면, 낮은 값은 네트워크를 더 희소하게 만들어 세포 그룹이 서로 분리되도록 합니다. `scater`는 총 세포 수를 5로 나눈 값(내림)의 기본 복잡도를 사용합니다.
 
-You can read more about the pitfalls of using tSNE [here](http://distill.pub/2016/misread-tsne/). A more recent publication entitled ["The art of using t-SNE for single-cell transcriptomics"](https://www.nature.com/articles/s41467-019-13056-x) discusses similarities and differences between t-SNE and UMAP, finding that most observed differences are due to initialization, and gives recommendataion on parameter tuning when visualizing scRNA-seq datasets of different sizes.  
+tSNE 사용의 함정에 대한 자세한 내용은 [여기](http://distill.pub/2016/misread-tsne/)에서 읽을 수 있습니다. ["단일 세포 전사체학에 t-SNE를 사용하는 기술"](https://www.nature.com/articles/s41467-019-13056-x)이라는 제목의 최근 간행물은 t-SNE와 UMAP 간의 유사점과 차이점을 논의하며, 관찰된 대부분의 차이점은 초기화로 인한 것이며 다양한 크기의 scRNA-seq 데이터 세트를 시각화할 때 매개변수 조정에 대한 권장 사항을 제공합니다.
 
-**Exercise 2**
-How do the tSNE plots change when a perplexity of 10 or 200 is used? How does the choice of perplexity affect the interpretation of the results?
+**연습 2**
+복잡도가 10 또는 200일 때 tSNE 플롯은 어떻게 변합니까? 복잡도 선택이 결과 해석에 어떤 영향을 미칩니까?
 
-<details><summary>Answer</summary>
+<details><summary>답</summary>
 
-```{r exprs-over10, fig.cap = "tSNE map of the tung data (perplexity = 10)", echo=FALSE}
+```{r exprs-over10, fig.cap = "tung 데이터의 tSNE 맵(복잡도 = 10)", echo=FALSE}
 set.seed(123456)
 umi.qc <- runTSNE(umi.qc, exprs_values = "logcounts_raw", perplexity = 10)
 plotTSNE(umi.qc, colour_by = "replicate", size_by = "detected", shape_by = "individual")
 ```
 
-```{r exprs-over11, fig.cap = "tSNE map of the tung data (perplexity = 200)", echo=FALSE}
+```{r exprs-over11, fig.cap = "tung 데이터의 tSNE 맵(복잡도 = 200)", echo=FALSE}
 set.seed(123456)
 umi.qc <- runTSNE(umi.qc, exprs_values = "logcounts_raw", perplexity = 200)
 plotTSNE(umi.qc, colour_by = "replicate", size_by = "detected", shape_by = "individual")
@@ -340,64 +340,64 @@ plotTSNE(umi.qc, colour_by = "replicate", size_by = "detected", shape_by = "indi
 
 </details>
 
-## Identifying Confounding Factors
+## 교란 요인 식별
 
-### Introduction
+### 소개
 
-There is a large number of potential confounders, artifacts and biases in scRNA-seq data. One of the main challenges in analyzing scRNA-seq data stems from the fact that it is difficult to carry out a true technical replicate (why?) to distinguish biological and technical variability. In the previous chapters we considered batch effects and in this chapter we will continue to explore how experimental artifacts can be identified and removed. We will continue using the `scater` package since it provides a set of methods specifically for quality control of experimental and explanatory variables. Moreover, we will continue to work with the Blischak data that was used in the previous chapter.
+scRNA-seq 데이터에는 많은 잠재적인 교란 요인, 인공물 및 편향이 있습니다. scRNA-seq 데이터 분석의 주요 과제 중 하나는 생물학적 변동성과 기술적 변동성을 구별하기 위해 진정한 기술적 복제를 수행하기 어렵다는 사실에서 비롯됩니다. 이전 장에서는 배치 효과를 고려했으며 이 장에서는 실험적 인공물을 식별하고 제거하는 방법을 계속 탐색할 것입니다. `scater` 패키지는 실험 및 설명 변수의 품질 관리를 위한 일련의 방법을 제공하므로 계속 사용할 것입니다. 또한 이전 장에서 사용된 Blischak 데이터를 계속 사용할 것입니다.
 
-Our `umi.qc` dataset contains filtered cells and genes. Our next step is to explore technical drivers of variability in the data to inform data normalisation before downstream analysis.
+`umi.qc` 데이터 세트에는 필터링된 세포와 유전자가 포함되어 있습니다. 다음 단계는 다운스트림 분석 전에 데이터 정규화를 알리기 위해 데이터의 기술적 변동성 요인을 탐색하는 것입니다.
 
-### Correlations with PCs
+### PC와의 상관 관계
 
-Let's first look again at the PCA plot of the QC-filtered dataset:
+먼저 QC 필터링된 데이터 세트의 PCA 플롯을 다시 살펴보겠습니다.
 
-```{r confounders2, fig.cap = "PCA plot of the tung data"}
+```{r confounders2, fig.cap = "tung 데이터의 PCA 플롯"}
 umi.qc <- runPCA(umi.qc, exprs_values = "logcounts_raw")
 dim(reducedDim(umi.qc, "PCA"))
 plotPCA(umi.qc, colour_by = "batch", size_by = "sum", shape_by = "individual")
 ```
 
-`scater` allows one to identify principal components that correlate with experimental and QC variables of interest (it ranks principle components by $R^2$ from a linear model regressing PC value against the variable of interest).
+`scater`를 사용하면 관심 있는 실험 및 QC 변수와 상관 관계가 있는 주성분을 식별할 수 있습니다(PC 값을 관심 변수에 대해 회귀하는 선형 모델에서 $R^2$로 주성분을 순위 지정).
 
-Let's test whether some of the variables correlate with any of the PCs.
+일부 변수가 PC와 상관 관계가 있는지 테스트해 보겠습니다.
 
-#### Detected genes
+#### 검출된 유전자
 
-```{r confounders3, fig.cap = "PC correlation with the number of detected genes", fig.asp=1}
+```{r confounders3, fig.cap = "검출된 유전자 수와의 PC 상관 관계", fig.asp=1}
 logcounts(umi.qc) <- assay(umi.qc, "logcounts_raw")
 getExplanatoryPCs(umi.qc,variables = "sum")
 plotExplanatoryPCs(umi.qc,variables = "sum") 
 logcounts(umi.qc) <- NULL
 ```
 
-Indeed, we can see that `PC1` can be almost completely (86%) explained by the total UMI counts (sequencing depth). In fact, it was also visible on the PCA plot above. This is a well-known issue in scRNA-seq and was described [here](http://biorxiv.org/content/early/2015/12/27/025528).
+실제로 `PC1`은 총 UMI 카운트(시퀀싱 깊이)로 거의 완전히(86%) 설명될 수 있음을 알 수 있습니다. 사실, 위 PCA 플롯에서도 볼 수 있었습니다. 이것은 scRNA-seq에서 잘 알려진 문제이며 [여기](http://biorxiv.org/content/early/2015/12/27/025528)에 설명되어 있습니다.
 
-### Explanatory Variables
+### 설명 변수
 
-`scater` can also compute the marginal $R^2$ for each variable when fitting a linear model regressing expression values for each gene against just that variable, and display a density plot of the gene-wise marginal $R^2$ values for the variables.
+`scater`는 또한 각 유전자의 발현 값을 해당 변수에 대해서만 회귀하는 선형 모델을 피팅할 때 각 변수에 대한 한계 $R^2$를 계산하고 변수에 대한 유전자별 한계 $R^2$ 값의 밀도 플롯을 표시할 수 있습니다.
 
-```{r confounders4, fig.cap = "Explanatory variables"}
+```{r confounders4, fig.cap = "설명 변수"}
 plotExplanatoryVariables(umi.qc,exprs_values = "logcounts_raw",
                          variables = c("detected","sum","batch",
                                        "individual","altexps_ERCC_percent","subsets_Mito_percent"))
 ```
 
-This analysis indicates that the number of detected genes (again) and also the sequencing depth (number of counts) have substantial explanatory power for many genes, so these variables are good candidates for conditioning out in a normalisation step, or including in downstream statistical models. Expression of ERCCs also appears to be an important explanatory variable and one notable feature of the above plot is that batch explains more than individual. What does that tell us about the technical and biological variability of the data?
+이 분석은 검출된 유전자 수(다시)와 시퀀싱 깊이(카운트 수)가 많은 유전자에 대해 상당한 설명력을 가지고 있음을 나타내므로 이러한 변수는 정규화 단계에서 조건화하거나 다운스트림 통계 모델에 포함하기에 좋은 후보입니다. ERCC의 발현도 중요한 설명 변수인 것으로 보이며 위 플롯의 한 가지 주목할만한 특징은 배치가 개체보다 더 많이 설명한다는 것입니다. 이것이 데이터의 기술적 및 생물학적 변동성에 대해 무엇을 알려줍니까?
 
-### Other Confounders
+### 기타 교란 요인
 
-In addition to correcting for batch, there are other factors that one may want to compensate for. As with batch correction, these adjustments require extrinsic information. One popular method is [scLVM](https://github.com/PMBio/scLVM) which allows you to identify and subtract the effect from processes such as cell-cycle or apoptosis.
+배치 보정 외에도 보상하고 싶은 다른 요인이 있을 수 있습니다. 배치 보정과 마찬가지로 이러한 조정에는 외부 정보가 필요합니다. 한 가지 인기 있는 방법은 세포 주기 또는 세포 사멸과 같은 과정의 영향을 식별하고 빼는 데 사용할 수 있는 [scLVM](https://github.com/PMBio/scLVM)입니다.
 
-In addition, protocols may differ in terms of their coverage of each transcript, their bias based on the average content of __A/T__ nucleotides, or their ability to capture short transcripts. Ideally, we would like to compensate for all of these differences and biases.
+또한 프로토콜은 각 전사체의 적용 범위, __A/T__ 뉴클레오티드의 평균 함량에 기반한 편향 또는 짧은 전사체를 포착하는 능력 측면에서 다를 수 있습니다. 이상적으로는 이러한 모든 차이점과 편향을 보상하고 싶습니다.
 
-### Exercise
+### 연습
 
-Perform the same analysis with read counts of the Blischak data. Use `tung/reads.rds` file to load the reads SCESet object. Once you have finished please compare your results to ours (next chapter).
+Blischak 데이터의 읽기 카운트로 동일한 분석을 수행합니다. `tung/reads.rds` 파일을 사용하여 읽기 SCESet 객체를 로드합니다. 완료되면 결과를 우리 것(다음 장)과 비교하십시오.
 
 ### sessionInfo()
 
-<details><summary>View session info</summary>
+<details><summary>세션 정보 보기</summary>
 ```{r echo=FALSE}
 sessionInfo()
 ```

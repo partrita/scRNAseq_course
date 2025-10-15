@@ -2,7 +2,7 @@
 output: html_document
 ---
 
-# scRNA-seq Analysis with Bioconductor
+# Bioconductor를 사용한 scRNA-seq 분석
 
 ```{r Intro0, echo=FALSE}
 library(knitr)
@@ -10,157 +10,157 @@ opts_chunk$set(cache = TRUE, fig.align = "center", echo=TRUE)
 ```
 
 :::highlight
-**QUESTIONS**
+**질문**
 
-- How can I import single-cell data into R?
-- How are different types of data/information (e.g. cell information, gene information, etc.) stored and manipulated?
-- How can I obtain basic summary metrics for cells and genes and filter the data accordingly?
-- How can I visually explore these metrics?
+- 단일 세포 데이터를 R로 어떻게 가져올 수 있습니까?
+- 다양한 유형의 데이터/정보(예: 세포 정보, 유전자 정보 등)는 어떻게 저장되고 조작됩니까?
+- 세포와 유전자에 대한 기본 요약 지표를 얻고 그에 따라 데이터를 필터링하려면 어떻게 해야 합니까?
+- 이러한 지표를 시각적으로 어떻게 탐색할 수 있습니까?
 
-**LEARNING OBJECTIVES**
+**학습 목표**
 
-- Understand how single-cell data is stored in the Bioconductor `SingleCellExperiment` object.
-- Create a `SingleCellExperiment` object from processed scRNA-seq count data.
-- Access the different parts of a `SingleCellExperiment` object, such as `rowData`, `colData` and `assay`.
-- Obtain several summary metrics from a matrix, to summarise information across cells or genes.
-- Apply basic filters to the data, by constructing logical vectors and subset the object using the `[` operator.
-- Produce basic data visualisations directly fron the data stored in the `SingleCellExperiment` object.
+- 단일 세포 데이터가 Bioconductor `SingleCellExperiment` 객체에 어떻게 저장되는지 이해합니다.
+- 처리된 scRNA-seq 카운트 데이터에서 `SingleCellExperiment` 객체를 만듭니다.
+- `rowData`, `colData` 및 `assay`와 같은 `SingleCellExperiment` 객체의 다른 부분에 액세스합니다.
+- 행렬에서 여러 요약 지표를 얻어 세포 또는 유전자에 대한 정보를 요약합니다.
+- 논리 벡터를 구성하고 `[` 연산자를 사용하여 객체를 부분 집합으로 만들어 데이터에 기본 필터를 적용합니다.
+- `SingleCellExperiment` 객체에 저장된 데이터에서 직접 기본 데이터 시각화를 생성합니다.
 :::
 
 
-In this chapter we will start our practical introduction of the core packages used in our analysis. 
+이 장에서는 분석에 사용되는 핵심 패키지에 대한 실습 소개를 시작하겠습니다.
 
-We will use a dataset of induced pluripotent stem cells generated from three different individuals (Tung et al. 2017) in Yoav Gilad’s lab at the University of Chicago. 
-The experiments were carried out on the Fluidigm C1 platform using unique molecular identifiers (UMIs) for quantification. 
-The data files are located in the `data/tung` folder in your working directory. 
-The original file can be found on the public NCBI repository [GEO accession GSE77288](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE77288) (file named: GSE77288_molecules-raw-single-per-sample.txt.gz). 
+시카고 대학교의 Yoav Gilad 연구실에서 세 명의 다른 개인(Tung et al. 2017)으로부터 생성된 유도 만능 줄기 세포 데이터 세트를 사용할 것입니다.
+실험은 정량화를 위해 고유 분자 식별자(UMI)를 사용하여 Fluidigm C1 플랫폼에서 수행되었습니다.
+데이터 파일은 작업 디렉토리의 `data/tung` 폴더에 있습니다.
+원본 파일은 공용 NCBI 저장소 [GEO accession GSE77288](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE77288)에서 찾을 수 있습니다(파일명: GSE77288_molecules-raw-single-per-sample.txt.gz).
 
 :::warning
-**NOTE:**
+**참고:**
 
-A couple of things that are missing from these materials: 
+이 자료에서 누락된 몇 가지 사항:
 
-- sparse matrix. Because it's using the tung dataset, we just get a regular matrix. If we decide to use a 10x dataset instead, it might be easier to introduce that as well. 
-- rowData - I didn't include any gene annotation, although we could easily include that as well, for example with information about which genes are nuclear or mitochondrial. 
+- 희소 행렬. tung 데이터 세트를 사용하기 때문에 일반 행렬만 얻습니다. 대신 10x 데이터 세트를 사용하기로 결정하면 그것도 소개하는 것이 더 쉬울 수 있습니다.
+- rowData - 핵 또는 미토콘드리아 유전자에 대한 정보와 같이 유전자 주석을 포함하지 않았지만 쉽게 포함할 수도 있습니다.
 :::
 
 
-## Packages for scRNA-seq Analysis
+## scRNA-seq 분석용 패키지
 
-There are several possible software packages (or package "ecosystems") that can be used for single-cell analysis.
-In this course we're going to focus on a collection of packages that are part of the **_Bioconductor_** project.
+단일 세포 분석에 사용할 수 있는 여러 가지 소프트웨어 패키지(또는 패키지 "생태계")가 있습니다.
+이 과정에서는 **_Bioconductor_** 프로젝트의 일부인 패키지 모음에 중점을 둘 것입니다.
 
 ![](figures/bioconductor_logo_rgb.jpg){ width=30% }
 
-_Bioconductor_ is a repository of _R_ packages specifically developed for biological analyses. 
-It has an excellent collection of packages for scRNA-seq analysis, which are summarised in the [Orchestrating Single-Cell Analysis with Bioconductor](https://bioconductor.org/books/release/OSCA/) book.
-The advantage of _Bioconductor_ is that it has strict requirements for package submission, including installation on every platform and full documentation with a tutorial (called a vignette) explaining how the package should be used.
-_Bioconductor_ also encourages utilization of standard data structures/classes and coding style/naming conventions, so that, in theory, packages and analyses can be combined into large pipelines or workflows.
-For scRNA-seq specifically, the standard data object used is called **`SingleCellExperiment`**, which we will learn more about in this section. 
+_Bioconductor_는 생물학적 분석을 위해 특별히 개발된 _R_ 패키지의 저장소입니다.
+scRNA-seq 분석을 위한 훌륭한 패키지 모음이 있으며, [Bioconductor를 사용한 단일 세포 분석 오케스트레이션](https://bioconductor.org/books/release/OSCA/) 책에 요약되어 있습니다.
+_Bioconductor_의 장점은 모든 플랫폼에 설치하고 패키지 사용 방법을 설명하는 튜토리얼(vignette이라고 함)이 포함된 전체 문서를 포함하여 패키지 제출에 대한 엄격한 요구 사항이 있다는 것입니다.
+_Bioconductor_는 또한 표준 데이터 구조/클래스 및 코딩 스타일/명명 규칙의 활용을 장려하여 이론적으로 패키지와 분석을 대규모 파이프라인 또는 워크플로로 결합할 수 있도록 합니다.
+scRNA-seq의 경우 특히 사용되는 표준 데이터 객체는 **`SingleCellExperiment`**라고 하며, 이 섹션에서 자세히 알아볼 것입니다.
 
 
 ![](figures/seurat_banner.jpg){ width=50% }
 
-[Seurat](https://satijalab.org/seurat/) is another popular _R_ package that uses its own data object called `Seurat`. The _Seurat_ package includes a very large collection of functions and excellent documentation. Because of its popularity, several other packages nowadays are also compatible with the `Seurat` object. Although not the main focus of this course, we have a section illustrating an analysis workflow using this package: [Analysis of scRNA-seq with Seurat]().
+[Seurat](https://satijalab.org/seurat/)는 `Seurat`라는 자체 데이터 객체를 사용하는 또 다른 인기 있는 _R_ 패키지입니다. _Seurat_ 패키지에는 매우 많은 함수 모음과 훌륭한 설명서가 포함되어 있습니다. 인기로 인해 오늘날 여러 다른 패키지도 `Seurat` 객체와 호환됩니다. 이 과정의 주요 초점은 아니지만 이 패키지를 사용한 분석 워크플로를 설명하는 섹션이 있습니다: [Seurat를 사용한 scRNA-seq 분석]().
 
 ![](figures/scanpy_logo.png){ width=30% }
 
-[Scanpy](https://scanpy.readthedocs.io/en/stable/) is a popular python package for scRNA-seq analysis, which stores data in an object called `AnnData` (annotated data). Similarly to _Seurat_ and _Bioconductor_, developers can write extensions to the main package compatible with the `AnnData` package, allowing the community to expand on the functionality. 
+[Scanpy](https://scanpy.readthedocs.io/en/stable/)는 scRNA-seq 분석을 위한 인기 있는 파이썬 패키지로, `AnnData`(주석이 달린 데이터)라는 객체에 데이터를 저장합니다. _Seurat_ 및 _Bioconductor_와 유사하게 개발자는 `AnnData` 패키지와 호환되는 주 패키지에 대한 확장을 작성하여 커뮤니티가 기능을 확장할 수 있도록 합니다.
 
-Although our main focus is on _Bioconductor_ packages, the concepts we will learn about throughout this course should apply to the other alternatives, the main thing that changes is the exact syntax used.
+우리의 주요 초점은 _Bioconductor_ 패키지에 있지만 이 과정 전반에 걸쳐 배우게 될 개념은 다른 대안에도 적용되어야 하며, 변경되는 주요 사항은 사용되는 정확한 구문입니다.
 
-## The `SingleCellExperiment` Object
+## `SingleCellExperiment` 객체
 
-Expression data is usually stored as a feature-by-sample matrix of expression quantification.
-In scRNA-seq analysis we typically start our analysis from a matrix of counts, representing the number of reads/UMIs that aligned to a particular feature for each cell. 
-Features can be things like genes, isoforms or exons. 
-Usually, analyses are done at the gene-level, and that is what we will focus on in this course. 
+발현 데이터는 일반적으로 특징별 샘플의 발현 정량화 행렬로 저장됩니다.
+scRNA-seq 분석에서는 일반적으로 각 세포에 대해 특정 특징에 정렬된 리드/UMI 수를 나타내는 카운트 행렬에서 분석을 시작합니다.
+특징은 유전자, 동위형 또는 엑손과 같은 것일 수 있습니다.
+일반적으로 분석은 유전자 수준에서 수행되며 이 과정에서 중점을 둘 것입니다.
 
-Besides our quantification matrix, we may also have information about each gene (e.g. their genome location, which type of gene they are, their length, etc.) and information about our cells (e.g. their tissue of origin, patient donor, processing batch, disease status, treatment exposure, etc.). 
+정량화 행렬 외에도 각 유전자에 대한 정보(예: 게놈 위치, 유전자 유형, 길이 등)와 세포에 대한 정보(예: 조직 출처, 환자 기증자, 처리 배치, 질병 상태, 치료 노출 등)가 있을 수 있습니다.
 
-We may also produce other matrices from our raw count data, for example a matrix of _normalised_ counts. 
-And finally, because single-cell experiment data is very high dimensional (with thousands of cells and thousands of genes), we often employ _dimensionality reduction_ techniques to capture the main variation in the data at lower dimensions. 
+원시 카운트 데이터에서 다른 행렬을 생성할 수도 있습니다. 예를 들어 _정규화된_ 카운트 행렬입니다.
+그리고 마지막으로, 단일 세포 실험 데이터는 매우 고차원적이기 때문에(수천 개의 세포와 수천 개의 유전자 포함), 종종 _차원 축소_ 기술을 사용하여 더 낮은 차원에서 데이터의 주요 변동을 포착합니다.
 
-`SingleCellExperiment` (SCE for short) is an object that stores all this information in a synchronised manner. 
-The different parts of the object can be access by special functions:
+`SingleCellExperiment`(줄여서 SCE)는 이 모든 정보를 동기화된 방식으로 저장하는 객체입니다.
+객체의 다른 부분은 특수 함수로 액세스할 수 있습니다.
 
-- One or more matrices of expression can be accessed by functions `assay` or `assays`
-- Information about the genes (the rows of the object) can be obtained using `rowData` function.
-- Information about the cells (the columns of the object) can be accessed by function `colData`.
+- 하나 이상의 발현 행렬은 `assay` 또는 `assays` 함수로 액세스할 수 있습니다.
+- 유전자(객체의 행)에 대한 정보는 `rowData` 함수를 사용하여 얻을 수 있습니다.
+- 세포(객체의 열)에 대한 정보는 `colData` 함수로 액세스할 수 있습니다.
 
-Some of these data are stored in the slots with similar names and can be accessed by `@` operator, but usage of accessor functions is consedered as a better programming style.
+이러한 데이터 중 일부는 유사한 이름의 슬롯에 저장되며 `@` 연산자로 액세스할 수 있지만 접근자 함수를 사용하는 것이 더 나은 프로그래밍 스타일로 간주됩니다.
 
-![The `SingleCellExperiment` object. Features (e.g. genes, isoforms or exons) are stored as rows and their metadata is in a `rowData` slot. Cells are stored as columns, with their metadata in `colData` slot. Matrices of expression are stored in the `assay` slots. Dimensionality reduction projections of the cells are stored in the `reducedDim` slots.](figures/singlecellexperiment.png)
+![`SingleCellExperiment` 객체. 특징(예: 유전자, 동위형 또는 엑손)은 행으로 저장되고 해당 메타데이터는 `rowData` 슬롯에 있습니다. 세포는 열로 저장되고 해당 메타데이터는 `colData` 슬롯에 있습니다. 발현 행렬은 `assay` 슬롯에 저장됩니다. 세포의 차원 축소 투영은 `reducedDim` 슬롯에 저장됩니다.](figures/singlecellexperiment.png)
 
 
-### Creating SCE Objects
+### SCE 객체 생성
 
-Let's start by creating a `SingleCellExperiment` object from our data.
-We have two files in `data/tung`:
+데이터에서 `SingleCellExperiment` 객체를 만드는 것으로 시작하겠습니다.
+`data/tung`에는 두 개의 파일이 있습니다.
 
-- `counts.txt` - a tab-delimited text file with the gene counts for each gene/cell.
-- `annotation.txt` - a tab-delimited text file with the cell annotations.
+- `counts.txt` - 각 유전자/세포에 대한 유전자 카운트가 있는 탭으로 구분된 텍스트 파일입니다.
+- `annotation.txt` - 세포 주석이 있는 탭으로 구분된 텍스트 파일입니다.
 
-Let's read these into R, using the standard `read.table()` function:
+표준 `read.table()` 함수를 사용하여 R로 읽어 보겠습니다.
 
 ```{r}
 tung_counts <- read.table("data/tung/molecules.txt", sep = "\t")
 tung_annotation <- read.table("data/tung/annotation.txt", sep = "\t", header = TRUE)
 ```
 
-We can now create a `SingleCellExperiment` object using the function of the same name:
+이제 같은 이름의 함수를 사용하여 `SingleCellExperiment` 객체를 만들 수 있습니다.
 
 ```{r, message=FALSE, warning=FALSE}
-# load the library
+# 라이브러리 로드
 library(SingleCellExperiment)
 
-# note that the data passed to the assay slot has to be a matrix!
+# assay 슬롯에 전달되는 데이터는 행렬이어야 합니다!
 tung <- SingleCellExperiment(
   assays = list(counts = as.matrix(tung_counts)),
   colData = tung_annotation
 )
 
-# remove the original tables as we don't need them anymore
+# 더 이상 필요하지 않으므로 원본 테이블 제거
 rm(tung_counts, tung_annotation)
 ```
 
-If we print the contents of this object, we will get several useful pieces of information:
+이 객체의 내용을 인쇄하면 몇 가지 유용한 정보를 얻을 수 있습니다.
 
 ```{r}
 tung
 ```
 
-- We have 19027 genes (rows) and 864 cells (columns). 
-- There is a single assay named "counts".
-- We can preview some of the gene names ("rownames") and cell names ("colnames").
-- There is no gene metadata ("rowData" is empty).
-- We can see some of the metadata for cells is ("colData names").
+- 19027개의 유전자(행)와 864개의 세포(열)가 있습니다.
+- "counts"라는 단일 분석이 있습니다.
+- 일부 유전자 이름("rownames")과 세포 이름("colnames")을 미리 볼 수 있습니다.
+- 유전자 메타데이터가 없습니다("rowData"가 비어 있음).
+- 세포에 대한 일부 메타데이터가 "colData names"임을 알 수 있습니다.
 
-To access different parts of the SCE object, we can use the following accessor functions: 
+SCE 객체의 다른 부분에 액세스하려면 다음 접근자 함수를 사용할 수 있습니다.
 
-| Function | Description |
+| 함수 | 설명 |
 | -: | :- |
-| `rowData(sce)` | Table of gene metadata. |
-| `colData(sce)` | Table of cell metadata. |
-| `assay(sce, "counts")` | The assay named "counts". |
-| `reducedDim(sce, "PCA")` | The reduced dimensionality table named "PCA" |
-| `sce$colname` | Shortcut to access the colum "colname" from `colData`. This is equivalent to `colData(sce)$colname` |
-| `sce[<rows>, <columns>]` | We can use the square brackets to subset the SCE object by rows or columns, similarly to how we subset `matrix` or `data.frame` objects |
+| `rowData(sce)` | 유전자 메타데이터 테이블. |
+| `colData(sce)` | 세포 메타데이터 테이블. |
+| `assay(sce, "counts")` | "counts"라는 이름의 분석. |
+| `reducedDim(sce, "PCA")` | "PCA"라는 이름의 축소된 차원 테이블. |
+| `sce$colname` | `colData`에서 "colname" 열에 액세스하는 바로 가기. 이는 `colData(sce)$colname`과 동일합니다. |
+| `sce[<rows>, <columns>]` | `matrix` 또는 `data.frame` 객체를 부분 집합으로 만드는 것과 유사하게 대괄호를 사용하여 SCE 객체를 행 또는 열로 부분 집합으로 만들 수 있습니다. |
 
 :::note
-**Naming Assays**
+**분석 이름 지정**
 
-Assays can have any name we wish. 
-However, there are some  conventions we can follow:
+분석에는 원하는 이름을 사용할 수 있습니다.
+그러나 우리가 따를 수 있는 몇 가지 규칙이 있습니다.
 
-- `counts`: Raw count data, e.g. number of reads or transcripts for a particular gene.
-- `normcounts`: Normalized values on the same scale as the original counts. For example, counts divided by cell-specific size factors that are centred at unity.
-- `logcounts`: Log-transformed counts or count-like values. In most cases, this will be defined as log-transformed normcounts, e.g. using log base 2 and a pseudo-count of 1.
-- `cpm`: Counts-per-million. This is the read count for each gene in each cell, divided by the library size of each cell in millions.
-- `tpm`: Transcripts-per-million. This is the number of transcripts for each gene in each cell, divided by the total number of transcripts in that cell (in millions).
+- `counts`: 원시 카운트 데이터, 예: 특정 유전자에 대한 리드 또는 전사체 수.
+- `normcounts`: 원래 카운트와 동일한 척도의 정규화된 값. 예를 들어, 1을 중심으로 하는 세포 특이적 크기 인자로 나눈 카운트.
+- `logcounts`: 로그 변환된 카운트 또는 카운트와 유사한 값. 대부분의 경우 이는 로그 변환된 정규화된 카운트로 정의됩니다. 예: 로그 밑 2와 의사 카운트 1 사용.
+- `cpm`: 백만 분의 카운트. 이는 각 세포의 각 유전자에 대한 리드 카운트를 백만 단위의 각 세포 라이브러리 크기로 나눈 값입니다.
+- `tpm`: 백만 분의 전사체. 이는 각 세포의 각 유전자에 대한 전사체 수를 해당 세포의 총 전사체 수(백만 단위)로 나눈 값입니다.
 
-Each of these has a function, so that we can access the "counts" assay using the `counts()` function.
-Therefore, these two are equivalent:
+각각에는 함수가 있으므로 `counts()` 함수를 사용하여 "counts" 분석에 액세스할 수 있습니다.
+따라서 이 두 가지는 동일합니다.
 
 ```{r, eval=FALSE}
 counts(tung)
@@ -169,119 +169,119 @@ assay(tung, "counts")
 
 :::
 
-Creating _SingleCellExperiment_ objects like we did above should work for any use case, as long as we have a matrix of counts that we can read to a file. 
-However, to read the output of the popular tool _cellranger_ (used to quantify 10x Chromium data), there is a dedicated function in the `DropletUtils` package, which  simplifies the process of importing the data. 
-Here is an example usage:
+위에서 한 것처럼 _SingleCellExperiment_ 객체를 만드는 것은 파일로 읽을 수 있는 카운트 행렬이 있는 한 모든 사용 사례에 대해 작동해야 합니다.
+그러나 인기 있는 도구 _cellranger_(10x Chromium 데이터를 정량화하는 데 사용됨)의 출력을 읽으려면 `DropletUtils` 패키지에 전용 함수가 있어 데이터 가져오기 프로세스를 단순화합니다.
+다음은 사용 예입니다.
 
 ```{r, eval=FALSE}
 library(DropletUtils)
 
-# importing the raw count data
+# 원시 카운트 데이터 가져오기
 sce <- read10xCounts("data/pbmc_1k_raw")
 
-# importing the pre-filtered count data
+# 미리 필터링된 카운트 데이터 가져오기
 sce <- read10xCounts("data/pbmc_1k_filtered")
 ```
 
 
 
-**Exercise 1**
+**연습 1**
 
-1. What are the classes of the "colData" and "assay" slots of our `tung` object? <details><summary>Hint</summary>To check the class of an object you can use the `class()` function.</details>
-2. How many batches and cells per batch are there? Does that number make sense?
-<details><summary>Hint</summary>You can _tabulate_ the values in a column from a `data.frame` using `table(x$column_name)`</details>
+1. `tung` 객체의 "colData" 및 "assay" 슬롯의 클래스는 무엇입니까? <details><summary>힌트</summary>객체의 클래스를 확인하려면 `class()` 함수를 사용할 수 있습니다.</details>
+2. 배치 수와 배치당 세포 수는 몇 개입니까? 그 숫자가 말이 됩니까?
+<details><summary>힌트</summary>`data.frame`의 열 값을 _표로 만들_려면 `table(x$column_name)`을 사용할 수 있습니다.</details>
 
-<details><summary>Answer</summary>
+<details><summary>답</summary>
 
 **A1.**
 
-Checking the class of the "colData" slot:
+"colData" 슬롯의 클래스 확인:
 
 ```{r}
 class(colData(tung))
 ```
 
-This is a `DFrame` object, which is a type of `data.frame` used in Bioconductor (in practice it can be used in the same way as a regular `data.frame`).
+이것은 Bioconductor에서 사용되는 `data.frame` 유형인 `DFrame` 객체입니다(실제로 일반 `data.frame`과 동일한 방식으로 사용할 수 있음).
 
-The "assay" slot is of class "matrix":
+"assay" 슬롯은 "matrix" 클래스입니다.
 
 ```{r}
-class(counts(tung)) # or: class(assay(sce, "counts"))
+class(counts(tung)) # 또는: class(assay(sce, "counts"))
 ```
 
 **A2.**
 
-The information about cells is stored in the `colData` slot of our object: 
+세포에 대한 정보는 객체의 `colData` 슬롯에 저장됩니다.
 
 ```{r}
 colData(tung)
 ```
 
-We can see that there is a column called "batch", which is what we're interested in looking at. 
-To access columns from a data frame we can use `$`, so `colData(tung)$batch` would return a vector with all the values in that column of the data frame. 
-There is also a short-cut to access these columns directly: `tung$batch` (without the need to use the `colData()` function first). 
+"batch"라는 열이 있으며, 이것이 우리가 보고자 하는 것입니다.
+데이터 프레임에서 열에 액세스하려면 `$`를 사용할 수 있으므로 `colData(tung)$batch`는 데이터 프레임의 해당 열에 있는 모든 값을 가진 벡터를 반환합니다.
+이러한 열에 직접 액세스하는 바로 가기도 있습니다: `tung$batch`(`colData()` 함수를 먼저 사용할 필요 없이).
 
-Now that we know how to access the column of our colData, we can use the `table()` function to check how many cells we have per batch:
+이제 colData의 열에 액세스하는 방법을 알았으므로 `table()` 함수를 사용하여 배치당 세포 수를 확인할 수 있습니다.
 
 ```{r}
 table(tung$batch)
 ```
 
-We can see that there are 96 cells in each of 9 batches.
-This number of cells per batch suggests that the protocol was done on 96-well plates, so the authors used a low-throughput method for their experiment. 
+9개 배치 각각에 96개의 세포가 있음을 알 수 있습니다.
+배치당 세포 수는 프로토콜이 96웰 플레이트에서 수행되었음을 시사하므로 저자들은 실험에 저처리량 방법을 사용했습니다.
 
 </details>
 
 
-### Modifying SCE Objects
+### SCE 객체 수정
 
-To modify parts of our SCE object we can use the `<-` assignment operator, together with the part of the object we wish to modify. 
-For example, to create a new assay: `assay(sce, "name_of_new_assay") <- new_matrix`.
-Other use cases are summarised in the table below.
+SCE 객체의 일부를 수정하려면 수정하려는 객체의 일부와 함께 `<-` 할당 연산자를 사용할 수 있습니다.
+예를 들어, 새 분석을 만들려면: `assay(sce, "name_of_new_assay") <- new_matrix`.
+다른 사용 사례는 아래 표에 요약되어 있습니다.
 
-As an example, let's create a simple transformation of our count data, by taking the log base 2 with an added pseudocount of 1 (otherwise log(0) = -Inf):
+예를 들어, 1의 의사 카운트를 추가하여 로그 밑 2를 취하여 카운트 데이터의 간단한 변환을 만들어 보겠습니다(그렇지 않으면 log(0) = -Inf).
 
 ```{r}
 assay(tung, "logcounts") <- log2(counts(tung) + 1)
 ```
 
-Because we named our assay "logcounts", and this is one of the conventional assay names, we can use the dedicated function to access it:
+분석 이름을 "logcounts"로 지정했고 이것이 기존 분석 이름 중 하나이므로 전용 함수를 사용하여 액세스할 수 있습니다.
 
 ```{r}
-# first 10 rows and 4 columns of the logcounts assay
-logcounts(tung)[1:10, 1:4] # or: assay(tung, "logcounts")[1:10, 1:5]
+# logcounts 분석의 처음 10개 행과 4개 열
+logcounts(tung)[1:10, 1:4] # 또는: assay(tung, "logcounts")[1:10, 1:5]
 ```
 
-Here is a summary of other ways to modify data in SCE objects:
+다음은 SCE 객체에서 데이터를 수정하는 다른 방법에 대한 요약입니다.
 
-| Code | Description |
+| 코드 | 설명 |
 | -: | :- |
-| `assay(sce, "name") <- matrix` | Add a new assay matrix. The new matrix has to have matching rownames and colnames to the existing object. |
-| `rowData(sce) <- data_frame` | Replace `rowData` with a new table (or add one if it does not exist). |
-| `colData(sce) <- data_frame` | Replace `colData` with a new table (or add one if it does not exist). |
-| `colData(sce)$column_name <- values` | Add a new column to the `colData` table (or replace it if it already exists). |
-| `rowData(sce)$column_name <- values` | Add a new column to the `rowData` table (or replace it if it already exists). |
-| `reducedDim(sce, "name") <- matrix` | Add a new dimensionality reduction matrix. The new matrix has to have matching colnames to the existing object. |
+| `assay(sce, "name") <- matrix` | 새 분석 행렬을 추가합니다. 새 행렬은 기존 객체와 일치하는 rownames 및 colnames를 가져야 합니다. |
+| `rowData(sce) <- data_frame` | `rowData`를 새 테이블로 바꾸거나 없는 경우 추가합니다. |
+| `colData(sce) <- data_frame` | `colData`를 새 테이블로 바꾸거나 없는 경우 추가합니다. |
+| `colData(sce)$column_name <- values` | `colData` 테이블에 새 열을 추가하거나 이미 있는 경우 바꿉니다. |
+| `rowData(sce)$column_name <- values` | `rowData` 테이블에 새 열을 추가하거나 이미 있는 경우 바꿉니다. |
+| `reducedDim(sce, "name") <- matrix` | 새 차원 축소 행렬을 추가합니다. 새 행렬은 기존 객체와 일치하는 colnames를 가져야 합니다. |
 
 
-### Matrix Statistics
+### 행렬 통계
 
-Because the main data stored in `SingleCellExperiment` objects is a matrix, it is useful to cover some functions that calculate summary metrics across rows or columns of a matrix. 
-There are several functions to do this, detailed in the information box below. 
+`SingleCellExperiment` 객체에 저장된 주요 데이터는 행렬이므로 행렬의 행 또는 열에 대한 요약 지표를 계산하는 일부 함수를 다루는 것이 유용합니다.
+이를 수행하는 여러 함수가 있으며 아래 정보 상자에 자세히 설명되어 있습니다.
 
-For example, to calculate the mean counts per cell (columns) in our dataset:
+예를 들어, 데이터 세트에서 세포당(열) 평균 카운트를 계산하려면:
 
 ```{r, eval=FALSE}
 colMeans(counts(tung))
 ```
 
-We could add this information to our column metadata as a new column, which we could do as:
+이 정보를 새 열로 열 메타데이터에 추가할 수 있으며 다음과 같이 할 수 있습니다.
 
 ```{r}
 colData(tung)$mean_counts <- colMeans(counts(tung))
 ```
 
-If we look at the colData slot we can see the new column has been added:
+colData 슬롯을 보면 새 열이 추가되었음을 알 수 있습니다.
 
 ```{r}
 colData(tung)
@@ -290,44 +290,44 @@ colData(tung)
 
 :::note
 
-There are several functions that can be used to calculate summary metrics - such as mean, median, variance, etc. - across rows or columns of a matrix (or a sparse matrix). 
-<details><summary>More</summary>
+행렬(또는 희소 행렬)의 행 또는 열에 대한 평균, 중앙값, 분산 등과 같은 요약 지표를 계산하는 데 사용할 수 있는 여러 함수가 있습니다.
+<details><summary>더 보기</summary>
 
-Here are some of the functions available:
+사용 가능한 일부 함수는 다음과 같습니다.
 
 ```{r, eval=FALSE}
-# row (feature) summaries
-rowSums(counts(tung))  # sum
-rowMeans(counts(tung)) # mean
-rowSds(counts(tung))   # standard deviation
-rowVars(counts(tung))  # variance
-rowIQRs(counts(tung))  # inter-quartile range
-rowMads(counts(tung))  # mean absolute deviation
+# 행(특징) 요약
+rowSums(counts(tung))  # 합계
+rowMeans(counts(tung)) # 평균
+rowSds(counts(tung))   # 표준 편차
+rowVars(counts(tung))  # 분산
+rowIQRs(counts(tung))  # 사분위수 범위
+rowMads(counts(tung))  # 평균 절대 편차
 
-# column (sample) summaries
-colSums(counts(tung))  # sum
-colMeans(counts(tung)) # mean
-colSds(counts(tung))   # standard deviation
-colVars(counts(tung))  # variance
-colIQRs(counts(tung))  # inter-quartile range
-colMads(counts(tung))  # mean absolute deviation
+# 열(샘플) 요약
+colSums(counts(tung))  # 합계
+colMeans(counts(tung)) # 평균
+colSds(counts(tung))   # 표준 편차
+colVars(counts(tung))  # 분산
+colIQRs(counts(tung))  # 사분위수 범위
+colMads(counts(tung))  # 평균 절대 편차
 ```
 
 </details>
 
 :::
 
-**Exercise 2**
+**연습 2**
 
-1. Add a new column to `colData` named "total_counts" with the sum of counts in each cell. 
-2. Create a new assay called "cpm" (Counts-Per-Million), which contains the result of dividing the counts matrix by the total counts in millions. 
-3. How can you access this new assay?
+1. 각 세포의 카운트 합계를 가진 "total_counts"라는 새 열을 `colData`에 추가합니다.
+2. 카운트 행렬을 백만 단위의 총 카운트로 나눈 결과를 포함하는 "cpm"(백만당 카운트)이라는 새 분석을 만듭니다.
+3. 이 새 분석에 어떻게 액세스할 수 있습니까?
 
-<details><summary>Answer</summary>
+<details><summary>답</summary>
 
 **A1.**
 
-Because we want the total counts per cell, and cells are stored as columns in the SCE object, we need to use the `colSums()` function:
+세포당 총 카운트를 원하고 세포가 SCE 객체의 열로 저장되므로 `colSums()` 함수를 사용해야 합니다.
 
 ```{r}
 colData(tung)$total_counts <- colSums(counts(tung))
@@ -335,156 +335,156 @@ colData(tung)$total_counts <- colSums(counts(tung))
 
 **A2.**
 
-We need to divide our counts matrix by the new column we've just created. Function `sweep` can be used to make it columnwise:
+방금 만든 새 열로 카운트 행렬을 나누어야 합니다. `sweep` 함수를 사용하여 열별로 수행할 수 있습니다.
 
 ```{r}
-# function sweep takes following arguments:
-# matrix to normalize
-# dimention to normalize along (1 - by rows, 2 - by columns)
-# statistics to normalize by
-# function to use for normalization
+# sweep 함수는 다음 인수를 사용합니다.
+# 정규화할 행렬
+# 정규화할 차원(1 - 행별, 2 - 열별)
+# 정규화할 통계
+# 정규화에 사용할 함수
 assay(tung, "cpm") <- sweep(counts(tung),2,tung$total_counts/1e6,'/')
-# check that column sums are 1e6 now
+# 열 합계가 이제 1e6인지 확인합니다.
 colSums(cpm(tung))[1:10]
 ```
 
-We also divided by `1e6`, so that it's in units of millions. 
+또한 백만 단위로 만들기 위해 `1e6`으로 나누었습니다.
 
-Note that we're dividing a matrix (`counts(tung)`) by a vector (`tung$total_counts`). 
-R will do this division row-by-row, and "recycles" the `tung$total_counts` vector each time it starts a new rown of the `counts(tung)` matrix. 
+행렬(`counts(tung)`)을 벡터(`tung$total_counts`)로 나누고 있음에 유의하십시오.
+R은 이 나누기를 행별로 수행하고 `counts(tung)` 행렬의 새 행을 시작할 때마다 `tung$total_counts` 벡터를 "재활용"합니다.
 
 **A3.**
 
-Because "cpm" is one of the conventional names used for an assay, we can access it with the `cpm()` function:
+"cpm"은 분석에 사용되는 기존 이름 중 하나이므로 `cpm()` 함수로 액세스할 수 있습니다.
 
 ```{r, eval=FALSE}
-# these two are equivalent
+# 이 두 가지는 동일합니다
 cpm(tung)
 assay(tung, "cpm")
 ```
 </details>
 
 
-### Subsetting SCE Objects
+### SCE 객체 부분 집합화
 
-Similarly to the standard `data.frame` and `matrix` objects in R, we can use the `[` operator to subset our SingleCellExperiment either by _rows_ (genes) or _columns_ (cells). 
-The general syntax is: **`sce[rows_of_interest, columns_of_interest]`**.
+R의 표준 `data.frame` 및 `matrix` 객체와 유사하게 `[` 연산자를 사용하여 _행_(유전자) 또는 _열_(세포)별로 SingleCellExperiment를 부분 집합으로 만들 수 있습니다.
+일반적인 구문은 **`sce[관심 있는 행, 관심 있는 열]`**입니다.
 
-For example: 
+예를 들어:
 
 ```{r, eval=FALSE}
-# subset by numeric index
-tung[1:3, ] # the first 3 genes, keep all cells
-tung[, 1:3] # the first 3 cells, keep all genes
-tung[1:3, 1:2] # the first 3 genes and first 2 cells
+# 숫자 인덱스로 부분 집합
+tung[1:3, ] # 처음 3개 유전자, 모든 세포 유지
+tung[, 1:3] # 처음 3개 세포, 모든 유전자 유지
+tung[1:3, 1:2] # 처음 3개 유전자와 처음 2개 세포
 
-# subset by name
+# 이름으로 부분 집합
 tung[c("ENSG00000069712", "ENSG00000237763"), ]
 tung[, c("NA19098.r1.A01", "NA19098.r1.A03")]
 tung[c("ENSG00000069712", "ENSG00000237763"), c("NA19098.r1.A01", "NA19098.r1.A03")]
 ```
 
-Although manually subsetting the object can sometimes be useful, more often we want to do **conditional subsetting** based on TRUE/FALSE logical statements. 
-This is extremely useful for filtering our data. 
-Let see some practical examples. 
+객체를 수동으로 부분 집합으로 만드는 것이 때로는 유용할 수 있지만, TRUE/FALSE 논리 문을 기반으로 **조건부 부분 집합**을 수행하는 경우가 더 많습니다.
+이는 데이터를 필터링하는 데 매우 유용합니다.
+몇 가지 실제 예를 살펴보겠습니다.
 
-Let's say we wanted to retain genes with a mean count greater than 0.01. 
-As we saw, to calculate the mean counts per gene (rows in the SCE object), we can use the `rowMeans()` function:
+평균 카운트가 0.01보다 큰 유전자를 유지하고 싶다고 가정해 보겠습니다.
+보았듯이 유전자당 평균 카운트(SCE 객체의 행)를 계산하려면 `rowMeans()` 함수를 사용할 수 있습니다.
 
 ```{r}
-# calculate the mean counts per gene
+# 유전자당 평균 카운트 계산
 gene_means <- rowMeans(counts(tung))
 
-# print the first 10 values
+# 처음 10개 값 인쇄
 gene_means[1:10]
 ```
 
-We can turn this into a TRUE/FALSE vector by using a logical operator:
+논리 연산자를 사용하여 이를 TRUE/FALSE 벡터로 바꿀 수 있습니다.
 
 ```{r}
 gene_means[1:10] > 0.01
 ```
 
-We can use such a logical vector inside `[` to filter our data, which will return only the cases where the value is TRUE:
+`[` 안에 이러한 논리 벡터를 사용하여 데이터를 필터링할 수 있으며, 값이 TRUE인 경우만 반환합니다.
 
 ```{r}
 tung[gene_means > 0.01, ]
 ```
 
-Notice how the resulting SCE object has fewer genes than the original. 
+결과 SCE 객체에 원래보다 더 적은 유전자가 있음을 확인하십시오.
 
-Another common use case is to retain cells with a certain number of genes above a certain threshold of expression. 
-For this question, we need to break the problem into parts. 
-First let's check in our counts matrix, which genes are expressed above a certain threshold:
+또 다른 일반적인 사용 사례는 특정 발현 임계값 이상의 특정 수의 유전자를 가진 세포를 유지하는 것입니다.
+이 질문에 대해서는 문제를 부분으로 나누어야 합니다.
+먼저 카운트 행렬에서 특정 임계값 이상으로 발현되는 유전자를 확인해 보겠습니다.
 
 ```{r, eval=FALSE}
-# counts of at least 1
+# 최소 1의 카운트
 counts(tung) > 0
 ```
 
 ```{r, echo=FALSE}
-# counts of at least 1
+# 최소 1의 카운트
 counts(tung)[1:10, 1:4] > 0
 ```
 
-We can see that our matrix is now composed of only TRUE/FALSE values. 
-Because TRUE/FALSE are encoded as 1/0, we can use `colSums()` to calculate the total number of genes above this threshold per cell:
+행렬이 이제 TRUE/FALSE 값으로만 구성되어 있음을 알 수 있습니다.
+TRUE/FALSE는 1/0으로 인코딩되므로 `colSums()`를 사용하여 세포당 이 임계값 이상의 총 유전자 수를 계산할 수 있습니다.
 
 ```{r}
-# total number of detected genes per cell
+# 세포당 총 검출 유전자 수
 total_detected_per_cell <- colSums(counts(tung) > 0)
 
-# print the first 10 values
+# 처음 10개 값 인쇄
 total_detected_per_cell[1:10]
 ```
 
-Finally, we can use this vector to apply our final condition, for example that we want cells with at least 5000 detected genes:
+마지막으로 이 벡터를 사용하여 최종 조건을 적용할 수 있습니다. 예를 들어 최소 5000개의 검출된 유전자를 가진 세포를 원합니다.
 
 ```{r}
 tung[, total_detected_per_cell > 5000]
 ```
 
-Notice how the new SCE object has fewer cells than the original. 
+새 SCE 객체에 원래보다 더 적은 세포가 있음을 확인하십시오.
 
-Here is a summary of the syntax used for some common filters:
+다음은 일부 일반적인 필터에 사용되는 구문 요약입니다.
 
-| Filter on | Code | Description |
+| 필터 대상 | 코드 | 설명 |
 | :-: | -: | :- |
-| Cells | `colSums(counts(sce)) > x` | Total counts per cell greater than _x_. |
-| Cells | `colSums(counts(sce) > x) > y` | Cells with at least _y_ genes having counts greater than _x_. |
-| Genes | `rowSums(counts(sce)) > x` | Total counts per gene greater than _x_. |
-| Genes | `rowSums(counts(sce) > x) > y` | Genes with at least _y_ cells having counts greater than _x_. |
+| 세포 | `colSums(counts(sce)) > x` | 세포당 총 카운트가 _x_보다 큼. |
+| 세포 | `colSums(counts(sce) > x) > y` | _x_보다 큰 카운트를 가진 유전자가 최소 _y_개 이상인 세포. |
+| 유전자 | `rowSums(counts(sce)) > x` | 유전자당 총 카운트가 _x_보다 큼. |
+| 유전자 | `rowSums(counts(sce) > x) > y` | _x_보다 큰 카운트를 가진 세포가 최소 _y_개 이상인 유전자. |
 
 
-**Exercise 3**
+**연습 3**
 
-1. Create a new object called `tung_filtered` which contains:
-    - cells with at least 25000 total counts
-    - genes that have more than 5 counts in at least half of the cells
-2. How many cells and genes are you left with?
+1. 다음을 포함하는 `tung_filtered`라는 새 객체를 만듭니다.
+    - 총 카운트가 25000 이상인 세포
+    - 세포의 절반 이상에서 5개 이상의 카운트를 가진 유전자
+2. 남은 세포와 유전자는 몇 개입니까?
 
-<details><summary>Answer</summary>
+<details><summary>답</summary>
 
-Let's do this in parts, by creating a TRUE/FALSE logical vector for each condition. 
-For the first condition, we need to calculate the total counts per cell (columns), and threshold it based on the values being greater than or equal to 25000:
+각 조건에 대해 TRUE/FALSE 논리 벡터를 만들어 부분적으로 수행해 보겠습니다.
+첫 번째 조건의 경우 세포당(열) 총 카운트를 계산하고 값이 25000 이상인 것을 기준으로 임계값을 설정해야 합니다.
 
 ```{r}
 cell_filter <- colSums(counts(tung)) >= 25000
 
-# check how many TRUE/FALSE have
+# TRUE/FALSE가 몇 개인지 확인
 table(cell_filter)
 ```
 
-For the second condition, we need to apply two nested conditions. By consulting the table above, we can achieve this by:
+두 번째 조건의 경우 두 개의 중첩된 조건을 적용해야 합니다. 위의 표를 참조하여 다음과 같이 할 수 있습니다.
 
 ```{r}
 gene_filter <- rowSums(counts(tung) > 5) > ncol(tung)/2
 
-# check how many TRUE/FALSE have
+# TRUE/FALSE가 몇 개인지 확인
 table(gene_filter)
 ```
 
-Finally, we can use both of these logical vectors to subset our object: 
+마지막으로 이 두 논리 벡터를 모두 사용하여 객체를 부분 집합으로 만들 수 있습니다.
 
 ```{r}
 tung_filtered <- tung[gene_filter, cell_filter]
@@ -493,20 +493,18 @@ tung_filtered
 ```
 </details>
 
-## Visual Data Exploration
+## 시각적 데이터 탐색
 
-There are several ways to produce visualisations from our data. 
-We will use the `ggplot2` package for our plots, together with the Bioconductor package `scater`, which has some helper functions for retrieving data from a _SingleCellExperiment_ object ready for visualisation. 
+데이터에서 시각화를 생성하는 여러 가지 방법이 있습니다.
+플롯에는 `ggplot2` 패키지와 함께 시각화를 위해 _SingleCellExperiment_ 객체에서 데이터를 검색하는 데 도움이 되는 일부 도우미 함수가 있는 Bioconductor 패키지 `scater`를 사용할 것입니다.
 
-As a reminder, the basic components of a _ggplot_ are:
+알림으로, _ggplot_의 기본 구성 요소는 다음과 같습니다.
 
-- A **data.frame** with data to be plotted
-- The variables (columns of the data.frame) that will be _mapped_ to different 
-**aesthetics** of the graph (e.g. axis, colours, shapes, etc.)
-- the **geometry** that will be drawn on the graph (e.g. points, lines, 
-boxplots, violinplots, etc.)
+- 플롯할 데이터가 있는 **data.frame**
+- 그래프의 다른 **미학**(예: 축, 색상, 모양 등)에 _매핑_될 변수(data.frame의 열)
+- 그래프에 그려질 **기하학**(예: 점, 선, 상자 그림, 바이올린 그림 등)
 
-This translates into the following basic syntax:
+이는 다음 기본 구문으로 변환됩니다.
 
 ``` r
 ggplot(data = <data.frame>, 
@@ -514,8 +512,8 @@ ggplot(data = <data.frame>,
    geom_<type of geometry>()
 ```
 
-For example, let's visualise what the distribution of total counts per cell is for each of our batches. 
-This information is stored in _colData_, so we need to extract it from our object and convert it to a standard data.frame:
+예를 들어, 각 배치에 대한 세포당 총 카운트 분포가 어떻게 되는지 시각화해 보겠습니다.
+이 정보는 _colData_에 저장되어 있으므로 객체에서 추출하여 표준 data.frame으로 변환해야 합니다.
 
 ```{r}
 cell_info <- as.data.frame(colData(tung))
@@ -523,10 +521,10 @@ cell_info <- as.data.frame(colData(tung))
 head(cell_info)
 ```
 
-Now we are ready to make our plot:
+이제 플롯을 만들 준비가 되었습니다.
 
 ```{r}
-# load the library
+# 라이브러리 로드
 library(ggplot2)
 
 ggplot(data = cell_info, aes(x = batch, y = total_counts)) +
@@ -534,9 +532,9 @@ ggplot(data = cell_info, aes(x = batch, y = total_counts)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
-What if we wanted to visualise the distribution of expression of a particular gene in each batch? This now gets a little more complicated, because the gene expression information is stored in the _counts assay_ of our SCE, whereas the batch information is in the _colData_. To bring both of these pieces of information together would require us to do a fair amount of data manipulation to put it all together into a single data.frame. This is where the **scater package** is very helpful, as it provides us with the `ggcells()` function that let's us specify all these pieces of information for our plot. 
+각 배치에서 특정 유전자의 발현 분포를 시각화하고 싶다면 어떻게 해야 할까요? 유전자 발현 정보는 SCE의 _counts assay_에 저장되어 있고 배치 정보는 _colData_에 있기 때문에 이제 조금 더 복잡해집니다. 이 두 정보를 함께 가져오려면 모든 것을 단일 data.frame에 넣기 위해 상당한 데이터 조작을 해야 합니다. 이것이 **scater 패키지**가 매우 유용한 부분입니다. 플롯에 대한 이 모든 정보를 지정할 수 있는 `ggcells()` 함수를 제공하기 때문입니다.
 
-For example, the same plot as above could have been done directly from our `tung` SCE object:
+예를 들어, 위와 동일한 플롯은 `tung` SCE 객체에서 직접 수행할 수 있습니다.
 
 ```{r}
 library(scater)
@@ -545,7 +543,7 @@ ggcells(tung, aes(x = batch, y = total_counts)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
-If we instead wanted to plot the expression for one of our genes, we could do it as:
+대신 유전자 중 하나의 발현을 플롯하고 싶다면 다음과 같이 할 수 있습니다.
 
 ```{r}
 library(scater)
@@ -554,74 +552,72 @@ ggcells(tung, aes(x = batch, y = ENSG00000198938), exprs_values = "logcounts") +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
-Note that we specified which assay we wanted to use for our expression values (`exprs_values` option). The default is "logcounts", so we wouldn't have had to specify it in this case, but it's worth knowing that in case you want to visualise the expression from a different assay. The functionality provided by the `scater` package goes far beyond plotting, it also includes several functions for quality control, which we will return to in the next chapter. 
+발현 값에 사용할 분석을 지정했습니다(`exprs_values` 옵션). 기본값은 "logcounts"이므로 이 경우에는 지정할 필요가 없지만 다른 분석에서 발현을 시각화하려는 경우를 대비하여 알아두는 것이 좋습니다. `scater` 패키지가 제공하는 기능은 플롯을 훨씬 뛰어넘으며 품질 관리를 위한 여러 기능도 포함되어 있으며 다음 장에서 다시 다룰 것입니다.
 
-**Exercise 4**
+**연습 4**
 
-Make a scatterplot showing the relationship between the mean and the variance of the raw counts per cell. (Bonus: also colour the cells by batch.)
+세포당 원시 카운트의 평균과 분산 간의 관계를 보여주는 산점도를 만듭니다. (보너스: 배치별로 세포를 색칠합니다.)
 
-<details><summary>Hint</summary>
+<details><summary>힌트</summary>
 
-- First create a new column in _colData_ named "var_counts", which contains the counts variance using the `colVars()` function. 
-- Then use `ggcells()` to build a _ggplot_ with "mean_counts" as the x-axis and "var_counts" as the y-axis. 
-- You can use the `geom_point()` function to make a scatterplot. 
-- Finally, to colour the points you can use the `colour` aesthetic.
+- 먼저 `colVars()` 함수를 사용하여 카운트 분산을 포함하는 "var_counts"라는 새 열을 _colData_에 만듭니다.
+- 그런 다음 `ggcells()`를 사용하여 x축으로 "mean_counts"와 y축으로 "var_counts"를 가진 _ggplot_을 만듭니다.
+- `geom_point()` 함수를 사용하여 산점도를 만들 수 있습니다.
+- 마지막으로 점을 색칠하려면 `colour` 미학을 사용할 수 있습니다.
 
 </details>
 
-What can you conclude from this data exploration, in terms of selecting highly variable genes for downstream analysis?
+다운스트림 분석을 위해 매우 변동이 심한 유전자를 선택하는 측면에서 이 데이터 탐색에서 어떤 결론을 내릴 수 있습니까?
 
 
-<details><summary>Answer</summary>
+<details><summary>답</summary>
 
-First we add a new column to _colData_, using the `colVars()` function to calculate variance of our counts for each cell (columns of the SCE object):
+먼저 `colVars()` 함수를 사용하여 각 세포(SCE 객체의 열)에 대한 카운트 분산을 계산하여 _colData_에 새 열을 추가합니다.
 
 ```{r}
 colData(tung)$var_counts <- colVars(counts(tung))
 ```
 
-Now we are ready to make our plot, including using the colour aesthetic:
+이제 색상 미학을 포함하여 플롯을 만들 준비가 되었습니다.
 
 ```{r}
 ggcells(tung, aes(mean_counts, var_counts)) +
   geom_point(aes(colour = batch)) + theme_bw()
 ```
 
-We can see that there is a positive correlation between the mean and variance of gene counts. 
-This is a common feature of count data, in particular of RNA-seq data. 
-Because of this relationship, it's important to use tools that model the mean-variance relationship adequately, so that when we choose genes that are variable in our dataset, we're not simply choosing genes that are more highly expressed. 
+유전자 카운트의 평균과 분산 사이에 양의 상관 관계가 있음을 알 수 있습니다.
+이것은 카운트 데이터, 특히 RNA-seq 데이터의 일반적인 특징입니다.
+이러한 관계 때문에 평균-분산 관계를 적절하게 모델링하는 도구를 사용하는 것이 중요합니다. 그래야 데이터 세트에서 변동이 심한 유전자를 선택할 때 단순히 더 높게 발현되는 유전자를 선택하는 것이 아닙니다.
 
 </details>
 
 
-## Overview
+## 개요
 
 :::highlight
-**KEY POINTS**
+**핵심 사항**
 
-- The **_SingleCellExperiment_** (SCE) object is used to store expression data as well as information about our **cells (columns)** and **genes (rows)**. 
-- To create a new SCE object we can use the `SingleCellExperiment()` function. To read the output from _cellranger_ we can use the dedicated function `DropletUtils::read10xCounts()`. 
-- The main parts of this object are:
-  - **_assay_** - one or more matrices of expression quantification.
-      - There is one essential assay named "counts", which contains the raw counts on which all other analyses are based on.
-  - **_rowData_** - information about our genes.
-  - **_colData_** - information about our cells.
-  - **_reducedDim_** - one or more reduced dimensionality representations of our data.
-- We can access all the parts of this object using functions of the same name. For example `assay(sce, "counts")` retrieves the counts matrix from the object. 
-- We can add/modify parts of this object using the assignment operator `<-`. For example `assay(sce, "logcounts") <- log2(counts(sce) + 1)` would add a new assay named "logcounts" to our object. 
-- Matrix summary metrics are very useful to explore the properties of our expression data. Some of the more useful functions include `rowSums()`/`colSums()` and `rowMeans()`/`colMeans()`. These can be used to summarise information from our assays, for example `colSums(counts(sce))` would give us the total counts in each cell (columns). 
-- Combining matrix summaries with conditional operators (`>`, `<`, `==`, `!=`) can be used for **conditional subsetting** using `[`. 
-- We can use the **`ggcells()`** function (from the _scater_ package), to produce _ggplot_-style plots directly from our SCE object. 
+- **_SingleCellExperiment_**(SCE) 객체는 발현 데이터와 **세포(열)** 및 **유전자(행)**에 대한 정보를 저장하는 데 사용됩니다.
+- 새 SCE 객체를 만들려면 `SingleCellExperiment()` 함수를 사용할 수 있습니다. _cellranger_의 출력을 읽으려면 전용 함수 `DropletUtils::read10xCounts()`를 사용할 수 있습니다.
+- 이 객체의 주요 부분은 다음과 같습니다.
+  - **_assay_** - 하나 이상의 발현 정량화 행렬.
+      - 다른 모든 분석의 기반이 되는 원시 카운트를 포함하는 "counts"라는 필수 분석이 하나 있습니다.
+  - **_rowData_** - 유전자에 대한 정보.
+  - **_colData_** - 세포에 대한 정보.
+  - **_reducedDim_** - 데이터의 하나 이상의 축소된 차원 표현.
+- 이 객체의 모든 부분에 같은 이름의 함수를 사용하여 액세스할 수 있습니다. 예를 들어 `assay(sce, "counts")`는 객체에서 카운트 행렬을 검색합니다.
+- 할당 연산자 `<-`를 사용하여 이 객체의 일부를 추가/수정할 수 있습니다. 예를 들어 `assay(sce, "logcounts") <- log2(counts(sce) + 1)`은 "logcounts"라는 새 분석을 객체에 추가합니다.
+- 행렬 요약 지표는 발현 데이터의 속성을 탐색하는 데 매우 유용합니다. 더 유용한 함수로는 `rowSums()`/`colSums()` 및 `rowMeans()`/`colMeans()`가 있습니다. 이러한 함수는 분석에서 정보를 요약하는 데 사용할 수 있습니다. 예를 들어 `colSums(counts(sce))`는 각 세포(열)의 총 카운트를 제공합니다.
+- 행렬 요약을 조건부 연산자(`>`, `<`, `==`, `!=`)와 결합하면 `[`를 사용하여 **조건부 부분 집합**에 사용할 수 있습니다.
+- _scater_ 패키지의 **`ggcells()`** 함수를 사용하여 SCE 객체에서 직접 _ggplot_ 스타일 플롯을 생성할 수 있습니다.
 
 :::
 
 
 ### sessionInfo()
 
-<details><summary>View session info</summary>
+<details><summary>세션 정보 보기</summary>
 ```{r echo=FALSE}
 sessionInfo()
 ```
 </details>
-
-

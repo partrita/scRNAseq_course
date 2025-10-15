@@ -7,39 +7,39 @@ library(knitr)
 opts_chunk$set(cache = TRUE, fig.align = "center", echo=FALSE, tidy.opts=list(width.cutoff=80),tidy=TRUE)
 ```
 
-# Introduction to R/Bioconductor
+# R/Bioconductor 소개
 
-## Installing packages
+## 패키지 설치
 
 ### CRAN
 
-The Comprehensive R Archive Network [CRAN](https://cran.r-project.org/) is the biggest archive of R packages. There are few requirements for uploading packages besides building and installing successfully, hence documentation and support is often minimal and figuring how to use these packages can be a challenge it itself. CRAN is the default repository R will search to find packages to install:
+종합 R 아카이브 네트워크 [CRAN](https://cran.r-project.org/)은 R 패키지의 가장 큰 아카이브입니다. 패키지를 성공적으로 빌드하고 설치하는 것 외에는 패키지를 업로드하기 위한 요구 사항이 거의 없으므로 문서와 지원이 종종 최소화되어 이러한 패키지를 사용하는 방법을 알아내는 것이 어려울 수 있습니다. CRAN은 R이 설치할 패키지를 찾기 위해 검색하는 기본 저장소입니다.
 
 ```{r Intro-R1-1, eval=FALSE}
 install.packages("devtools")
 require("devtools")
 ```
 
-### Github
+### 깃허브
 
-[Github](https://github.com/) isn't specific to R, any code of any type in any state can be uploaded. There is no guarantee a package uploaded to github will even install, nevermind do what it claims to do. R packages can be downloaded and installed directly from github using the "devtools" package installed above.
+[Github](https://github.com/)는 R에만 국한되지 않으며 모든 유형의 코드를 모든 상태로 업로드할 수 있습니다. github에 업로드된 패키지가 설치될 것이라는 보장은 없으며, 주장하는 대로 작동할 것이라는 보장은 더욱 없습니다. R 패키지는 위에서 설치한 "devtools" 패키지를 사용하여 github에서 직접 다운로드하고 설치할 수 있습니다.
 
 ```{r Intro-R1-2, eval=FALSE}
 devtools::install_github("tallulandrews/M3Drop")
 ```
 
-Github is also a version control system which stores multiple versions of any package. By default the most recent "master" version of the package is installed. If you want an older version or the development branch this can be specified using the "ref" parameter:
+Github는 또한 패키지의 여러 버전을 저장하는 버전 관리 시스템입니다. 기본적으로 패키지의 가장 최신 "마스터" 버전이 설치됩니다. 이전 버전이나 개발 브랜치를 원하면 "ref" 매개변수를 사용하여 지정할 수 있습니다.
 
 ```{r Intro-R1-3, eval=FALSE}
-# different branch
+# 다른 브랜치
 devtools::install_github("tallulandrews/M3D", ref="nbumi")
-# previous commit
+# 이전 커밋
 devtools::install_github("tallulandrews/M3Drop", ref="434d2da28254acc8de4940c1dc3907ac72973135")
 ```
-Note: make sure you re-install the M3Drop master branch for later in the course.
+참고: 과정 뒷부분을 위해 M3Drop 마스터 브랜치를 다시 설치해야 합니다.
 
-### Bioconductor
-Bioconductor is a repository of R-packages specifically for biological analyses. It has the strictest requirements for submission, including installation on every platform and full documentation with a tutorial (called a vignette) explaining how the package should be used. Bioconductor also encourages utilization of standard data structures/classes and coding style/naming conventions, so that, in theory, packages and analyses can be combined into large pipelines or workflows. 
+### 바이오컨덕터
+Bioconductor는 생물학적 분석을 위한 R 패키지 저장소입니다. 모든 플랫폼에 설치하고 패키지 사용 방법을 설명하는 튜토리얼(vignette이라고 함)이 포함된 전체 문서를 포함하여 제출에 대한 가장 엄격한 요구 사항이 있습니다. Bioconductor는 또한 표준 데이터 구조/클래스 및 코딩 스타일/명명 규칙의 활용을 장려하여 이론적으로 패키지와 분석을 대규모 파이프라인 또는 워크플로로 결합할 수 있도록 합니다.
 
 
 ```{r Intro-R1-4, eval=FALSE}
@@ -49,7 +49,7 @@ BiocManager::install("edgeR")
 
 ```
 
-Bioconductor also requires creators to support their packages and has a regular 6-month release schedule. Make sure you are using the most recent release of bioconductor before trying to install packages for the course.
+Bioconductor는 또한 제작자가 패키지를 지원하도록 요구하며 정기적인 6개월 릴리스 일정이 있습니다. 과정용 패키지를 설치하기 전에 최신 버전의 bioconductor를 사용하고 있는지 확인하십시오.
 
 ```{r Intro-R5, eval=FALSE}
 if (!require("BiocManager", quietly = TRUE))
@@ -58,34 +58,34 @@ BiocManager::install()
 
 ```
 
-### Source
-The final way to install packages is directly from source. In this case you have to download a fully built source code file, usually packagename.tar.gz, or clone the github repository and rebuild the package yourself. Generally this will only be done if you want to edit a package yourself, or if for some reason the former methods have failed.
+### 소스
+패키지를 설치하는 마지막 방법은 소스에서 직접 설치하는 것입니다. 이 경우 일반적으로 packagename.tar.gz와 같은 완전히 빌드된 소스 코드 파일을 다운로드하거나 github 저장소를 복제하고 패키지를 직접 다시 빌드해야 합니다. 일반적으로 이는 패키지를 직접 편집하거나 어떤 이유로 이전 방법이 실패한 경우에만 수행됩니다.
 
 ```{r Intro-R1-5, eval=FALSE}
 install.packages("M3Drop_3.05.00.tar.gz", type="source")
 ```
 
-## Installation instructions
-All the packages necessary for this course are available [here](https://github.com/hemberg-lab/scRNA.seq.course/blob/master/Dockerfile). Starting from "RUN Rscript -e "install.packages('devtools')" ", run each of the commands (minus "RUN") on the command line or start an R session and run each of the commands within the quotation marks. Note the ordering of the installation is important in some cases, so make sure you run them in order from top to bottom. 
+## 설치 지침
+이 과정에 필요한 모든 패키지는 [여기](https://github.com/hemberg-lab/scRNA.seq.course/blob/master/Dockerfile)에서 사용할 수 있습니다. "RUN Rscript -e "install.packages('devtools')" "로 시작하여 명령줄에서 각 명령("RUN" 제외)을 실행하거나 R 세션을 시작하고 따옴표 안의 각 명령을 실행합니다. 일부 경우 설치 순서가 중요하므로 위에서 아래로 순서대로 실행해야 합니다.
 
-## Data types
-As most of programming languages, R uses variables to store the data. The variable can be created by typing its name, assignment operator (`=` or `<-` that are mostly identical) and value:
+## 데이터 유형
+대부분의 프로그래밍 언어와 마찬가지로 R은 데이터를 저장하기 위해 변수를 사용합니다. 변수는 이름, 할당 연산자(`=` 또는 `<-`는 대부분 동일함) 및 값을 입력하여 만들 수 있습니다.
 
 ```{r Intro-R2-1}
 var = 10
-# just type variable name to print it
+# 변수 이름을 입력하여 인쇄
 var
 ```
-we created variable named `var` that stores numerical value `10`.
+우리는 숫자 값 `10`을 저장하는 `var`라는 변수를 만들었습니다.
 
-R variables might be of various types. There are more than 20 types in total, but normally only few of them are used directly: logical, integer, numeric, character, list, and S4. The former four represents atomic vectors that are simple data structures with values of one type. Lists and S4 variables allow to store more sophisticated data structures. Type of variable can be accessed using `typeof` function. Lets discuss atomic vectors first. 
+R 변수는 다양한 유형일 수 있습니다. 총 20개 이상의 유형이 있지만 일반적으로 논리, 정수, 숫자, 문자, 목록 및 S4와 같이 몇 가지만 직접 사용됩니다. 이전 네 가지는 한 가지 유형의 값을 가진 간단한 데이터 구조인 원자 벡터를 나타냅니다. 목록 및 S4 변수를 사용하면 더 정교한 데이터 구조를 저장할 수 있습니다. 변수 유형은 `typeof` 함수를 사용하여 액세스할 수 있습니다. 먼저 원자 벡터에 대해 논의해 보겠습니다.
 
-### Logical
+### 논리
 
-The `logical` type stores Boolean values, i.e. TRUE and FALSE. It is used for storing the results of logical operations and conditional statements will be coerced to this type.
+`logical` 유형은 부울 값, 즉 TRUE와 FALSE를 저장합니다. 논리 연산의 결과를 저장하는 데 사용되며 조건문은 이 유형으로 강제 변환됩니다.
 
 ```{r Intro-R2-2}
-# everything after '#' sign in the line is comment, R will not try to interpret it
+# 줄에서 '#' 기호 뒤의 모든 것은 주석이며, R은 해석하려고 시도하지 않습니다.
 x = TRUE
 typeof(x)
 is.logical(x)
@@ -93,23 +93,23 @@ x = 2 > 3
 x
 ```
 
-R has all usual logical operators
+R에는 모든 일반적인 논리 연산자가 있습니다.
 ```{r Intro-R2-3}
 # not
 x = TRUE
 !x
 !(2 > 3)
-# or (true if one of operands is true)
+# or (피연산자 중 하나가 참이면 참)
 TRUE | FALSE
 !x | (2 > 3)
-# and (true if both of operands are true)
+# and (두 피연산자 모두 참이면 참)
 x & FALSE
 x & TRUE
 ```
 
-### Numeric and integer
+### 숫자 및 정수
 
-The `numeric` type is used to store decimal numbers.  
+`numeric` 유형은 십진수를 저장하는 데 사용됩니다.
 
 ```{r Intro-R2-4}
 x = 1.141
@@ -120,68 +120,68 @@ z = 6.02e23
 typeof(z)
 ```
 
-Here we see that even though R has an "integer" class and 42 could be stored more efficiently as an integer with notation used above it is stored as "numeric". If we want 42 to be stored as an integer we must specify it using specific notation:
+여기서 R에는 "integer" 클래스가 있고 42는 위에서 사용된 표기법으로 정수로 더 효율적으로 저장될 수 있지만 "numeric"으로 저장된다는 것을 알 수 있습니다. 42를 정수로 저장하려면 특정 표기법을 사용하여 지정해야 합니다.
 
 ```{r Intro-R2-5}
 y = 42L
 typeof(y)
 ```
 
-R have all common math operators and functions build in:
+R에는 모든 일반적인 수학 연산자와 함수가 내장되어 있습니다.
 ```{r Intro-R2-6}
 2 + 3
 3 * 4
 4 / 2
 5^2
-# results of calculations can be stored as variable
+# 계산 결과를 변수에 저장할 수 있습니다.
 c = 2*(3+7)/5 + 1
 sin(c)
 sqrt(c)
 ```
 
-### Character
+### 문자
 
-The `character` type stores text. Text variables can be created using single or double quotation marks, that are completely interchangeable:
+`character` 유형은 텍스트를 저장합니다. 텍스트 변수는 작은따옴표나 큰따옴표를 사용하여 만들 수 있으며 완전히 상호 교환 가능합니다.
 ```{r Intro-R2-7}
 a = "some text"
 a
 typeof(a)
-b = 'another text. "Double quotes" can be used here'
+b = 'another text. "큰따옴표"를 여기에 사용할 수 있습니다.'
 b
 ```
 
-In addition to standard alphanumeric characters, strings can also store various special characters. Special characters are specified using a backlash followed by a single character, the most relevant are the special character for tab : `\t` and new line : `\n`:
+표준 영숫자 문자 외에도 문자열은 다양한 특수 문자를 저장할 수도 있습니다. 특수 문자는 백슬래시와 단일 문자를 사용하여 지정되며, 가장 관련성이 높은 것은 탭에 대한 특수 문자 `\t`와 새 줄에 대한 `\n`입니다.
 ```{r Intro-R2-8}
-# cat is a fanction that concatenates and prints all its arguments
+# cat은 모든 인수를 연결하고 인쇄하는 함수입니다.
 cat("'Hello World\n'")
 cat("'Hello\tWorld\n'")
 cat("'Hello\nWorld\n'")
 ```
-There are many text useful functions, let's briefly discuss few of them:
+유용한 텍스트 함수가 많이 있으며, 그 중 몇 가지를 간략하게 논의해 보겠습니다.
 ```{r Intro-R2-9}
-# concatenate
+# 연결
 paste("hello","world")
-# defualt separater is space, let's change it
+# 기본 구분 기호는 공백이며, 변경해 보겠습니다.
 paste("hello","world",sep='_')
-# use paste0 if you do not need separator
+# 구분 기호가 필요하지 않은 경우 paste0 사용
 paste0("he",'llo')
 
-# substitute
+# 대체
 text = 'hello world'
 gsub('hello','goodbye',text)
 
-# check pattern
+# 패턴 확인
 grepl('wo',text)
 grepl('bye',text)
 ```
-### These all are vectors!
-Until now we stored just one value in each variable. But actually all types we just discussed are vectors, that is, they can store any number of values of given type. Function `c` can be used to **c**reate new vectors:
+### 이 모든 것은 벡터입니다!
+지금까지 각 변수에 하나의 값만 저장했습니다. 그러나 실제로 우리가 방금 논의한 모든 유형은 벡터이며, 즉 주어진 유형의 값을 얼마든지 저장할 수 있습니다. 함수 `c`는 새 벡터를 **c**생성하는 데 사용할 수 있습니다.
 ```{r Intro-R2-10}
 n = c(1,3,-2)
 n
 typeof(n)
 
-# ':' operator can be used to make vector of consecuitive integers
+# ':' 연산자는 연속적인 정수 벡터를 만드는 데 사용할 수 있습니다.
 4:7
 10:2
 
@@ -189,25 +189,25 @@ t = c('hello','world')
 t
 typeof(t)
 
-# number of elements
+# 요소 수
 length(t)
 
-# call of noset elements of vector would return NA
+# 벡터의 noset 요소를 호출하면 NA가 반환됩니다.
 t[3]
 
-# vectors can be extended by assignment to unset elements
+# 벡터는 설정되지 않은 요소에 할당하여 확장할 수 있습니다.
 t[3] = 'and'
 t[4] = 'goodbye'
 t
 ```
 
-Vectors can store only values of the same type. In any attempt to combine values of different types they are auto-coerced to the rightmost type in the following sequence: `logical -> integer -> numeric -> character`:
+벡터는 동일한 유형의 값만 저장할 수 있습니다. 다른 유형의 값을 결합하려고 시도하면 `logical -> integer -> numeric -> character` 순서로 맨 오른쪽 유형으로 자동 강제 변환됩니다.
 ```{r Intro-R2-11}
-# I use external parentheses to assign and print variale in single statement
+# 외부 괄호를 사용하여 단일 문으로 변수를 할당하고 인쇄합니다.
 (x = c(TRUE,FALSE))
 typeof(x)
 
-# not it is integer. Note that TRUE is coerced to one and FALSE to zero.
+# 이제 정수입니다. TRUE는 1로, FALSE는 0으로 강제 변환됩니다.
 (x = c(TRUE,FALSE,2L))
 typeof(x)
 
@@ -218,65 +218,65 @@ typeof(x)
 (x = c(TRUE,FALSE,2L,10.2,'text'))
 typeof(x)
 
-#auto-coercion tooks place if math operators or functions are applied to operands of different types:
+# 다른 유형의 피연산자에 수학 연산자나 함수를 적용하면 자동 강제 변환이 발생합니다.
 TRUE + 1
 FALSE + TRUE
 typeof(3L + 1.3)
 
 (x=1:10 > 5)
-sum(x) # gives number of TRUEs in x
+sum(x) # x의 TRUE 수를 제공합니다.
 
-# it can be used to calculate simple statistics on a vector
-(ages = rnorm(10,mean=60,sd = 10)) # lets randomly generate ages of ten people
-# how many of them are older than 60 years?
-sum(ages>60) # you can get another namber since ages are  randomly generated
+# 벡터에 대한 간단한 통계를 계산하는 데 사용할 수 있습니다.
+(ages = rnorm(10,mean=60,sd = 10)) # 10명의 나이를 무작위로 생성해 보겠습니다.
+# 그들 중 몇 명이 60세 이상입니까?
+sum(ages>60) # 나이가 무작위로 생성되므로 다른 숫자를 얻을 수 있습니다.
 ```
 
-**Exercise 1**
+**연습 1**
 
-What types will you get with following expressions (guess and check)
+다음 표현식으로 어떤 유형을 얻을 수 있습니까(추측하고 확인)?
 ```{r Intro-R2-12, eval=FALSE}
 (2 > 3)
 (4 > 2)*2L
 paste0(4,5)
 as.numeric('2.3')
 ```
-<details><summary>Answer</summary>
+<details><summary>답</summary>
 
 ```{r Intro-R2-13}
-(2 > 3) # results of this operation is logical
-(4 > 2)*2L # here logical is coerced to integer during multiplication. So result is integer
-paste0(4,5) # paste0 treats its arguments as text, so result is character
-as.numeric('2.3') # functions of that type (with names started with 'as.') coerce its argument to the specified type, numeric in this case
+(2 > 3) # 이 연산의 결과는 논리입니다.
+(4 > 2)*2L # 여기서 논리는 곱셈 중에 정수로 강제 변환됩니다. 따라서 결과는 정수입니다.
+paste0(4,5) # paste0은 인수를 텍스트로 처리하므로 결과는 문자입니다.
+as.numeric('2.3') # 해당 유형의 함수(이름이 'as.'로 시작)는 인수를 지정된 유형(이 경우 숫자)으로 강제 변환합니다.
 ```
 </details>
-### Vectorized operations
-Since all basic types in R are vectors, operators and many functions are vectorized, that is, they perform operations for each element of vector arguments:
+### 벡터화된 연산
+R의 모든 기본 유형은 벡터이므로 연산자와 많은 함수는 벡터화되어 있습니다. 즉, 벡터 인수의 각 요소에 대해 연산을 수행합니다.
 ```{r Intro-R3-1}
 a = 1:10
-a^2 # each element is sqared
+a^2 # 각 요소가 제곱됩니다.
 
 b = 5:-4
 
-# a and b are multiplied per element
+# a와 b는 요소별로 곱해집니다.
 a * b
 ```
-What would happen if lengths of operands are not identical?
+피연산자의 길이가 같지 않으면 어떻게 될까요?
 ```{r Intro-R3-2}
-a * 2 # this works well, each element in a is multiplied by 2
+a * 2 # 이것은 잘 작동하며, a의 각 요소에 2를 곱합니다.
 
-# shorter operand is recycled as many times as it needed to cover longer operan
-a * (1:2) 
+# 더 긴 피연산자를 덮을 때까지 더 짧은 피연산자가 필요한 만큼 재활용됩니다.
+a * (1:2)
 
-# R throws warning (not error!) if length of londer operands is not dividable by length of shorter one
+# 더 긴 피연산자의 길이가 더 짧은 피연산자의 길이로 나누어지지 않으면 R은 경고(오류가 아님!)를 발생시킵니다.
 a * (1:3)
 ```
-## Named vectors
-R allows elements of vectors to be named:
+## 명명된 벡터
+R은 벡터의 요소에 이름을 지정할 수 있습니다.
 ```{r Intro-R3-2-1}
-(a = c(a=1,b=3,other.name=10)) # dot is not a special character in R, it can be used in variable names is well (contrary to python)
+(a = c(a=1,b=3,other.name=10)) # 점은 R에서 특수 문자가 아니며 변수 이름에도 사용할 수 있습니다(파이썬과 반대).
 ```
-Names can be accessed and modified by `names` function:
+이름은 `names` 함수로 액세스하고 수정할 수 있습니다.
 ```{r Intro-R3-3}
 names(a)
 names(a)[1] = 'newname'
@@ -284,75 +284,75 @@ a
 names(a) = LETTERS[1:3]
 a
 ```
-## Vector subsetting
-Vector subsetting is one of main advantages of R. It is very flexible and powerful. There are three types of subsetting:
-1. By index (numerical)
-2. By name (character)
-3. By condition (logical)
-To make subsetting one need to type name of variable and specify desired elements in square brackets.
-### Numerical subsetting
-Contrary to many other languages vector indexing in R is 1-based, that is, first element has index 1.
+## 벡터 부분 집합화
+벡터 부분 집합화는 R의 주요 장점 중 하나입니다. 매우 유연하고 강력합니다. 부분 집합화에는 세 가지 유형이 있습니다.
+1. 인덱스별(숫자)
+2. 이름별(문자)
+3. 조건별(논리)
+부분 집합화를 하려면 변수 이름을 입력하고 대괄호 안에 원하는 요소를 지정해야 합니다.
+### 숫자 부분 집합화
+다른 많은 언어와 달리 R의 벡터 인덱싱은 1 기반입니다. 즉, 첫 번째 요소의 인덱스는 1입니다.
 ```{r Intro-R3-4}
 x = c(1,4,7,9,10,24,100)
-# you can take just one value
+# 하나의 값만 가져올 수 있습니다.
 x[4]
-# or multiple values
+# 또는 여러 값
 x[c(1,4,5)]
-# one element can be taken multiple times; elements can be taken in any order
+# 하나의 요소를 여러 번 가져올 수 있으며, 요소를 임의의 순서로 가져올 수 있습니다.
 x[c(6,1,5,1,2,6,6)]
-# use : to take consecutive elements (through creition of vector with consecutiv integers)
+# :를 사용하여 연속적인 요소를 가져옵니다(연속적인 정수 벡터를 생성하여).
 x[2:5]
 x[length(x):1]
-# results of subsetting can be saved into variale
+# 부분 집합화 결과를 변수에 저장할 수 있습니다.
 y = x[c(5,5,1:3)]
 y
 ```
-Negative indexes can be used to exclude specific elements:
+음수 인덱스를 사용하여 특정 요소를 제외할 수 있습니다.
 ```{r Intro-R3-5}
-x[-1:-3] # exclude first three elements
-x[-length(x)] # exclude last
+x[-1:-3] # 처음 세 요소 제외
+x[-length(x)] # 마지막 요소 제외
 
 ```
-### Subsetting by names
-Named vectors can be indexed by names:
+### 이름으로 부분 집합화
+명명된 벡터는 이름으로 인덱싱할 수 있습니다.
 ```{r Intro-R3-6}
-names(x) = letters[1:length(x)] # letters and LETTERS are pre-defined vectors of latin characters
+names(x) = letters[1:length(x)] # letters와 LETTERS는 미리 정의된 라틴 문자 벡터입니다.
 x
 x['a']
 x[c('b','a','c')]
 ```
-IMPORTANT! R allows name duplication. In this case first match will be returned:
+중요! R은 이름 중복을 허용합니다. 이 경우 첫 번째 일치 항목이 반환됩니다.
 ```{r Intro-R3-7}
 names(x)[3] = 'a'
 x
 x['a']
 ```
-### Logical subsetting
-Logical subsetting used to conditionally select some elements. One can get all odd values for instance
+### 논리적 부분 집합화
+논리적 부분 집합화는 일부 요소를 조건부로 선택하는 데 사용됩니다. 예를 들어 모든 홀수 값을 얻을 수 있습니다.
 ```{r Intro-R3-8}
-x[x %% 2 == 1] # operator '%%' gives you residue of division
-# or all values above given threshold
+x[x %% 2 == 1] # '%%' 연산자는 나누기의 나머지를 제공합니다.
+# 또는 주어진 임계값 이상의 모든 값
 x[x>9]
 ```
-Logical value in brackets should not necessary be calculated based on the vector
+괄호 안의 논리 값은 반드시 벡터를 기반으로 계산될 필요는 없습니다.
 ```{r Intro-R3-9}
-x[c(T,F,F,T,F,T,T)] # T and F are pre-defined variables that store TRUE and FALSE respectively
-# Logical value in brackets is recycled if it is shorter than the vector. This tick can be used to take each second element from the vector but it is also cause of many problems
+x[c(T,F,F,T,F,T,T)] # T와 F는 각각 TRUE와 FALSE를 저장하는 미리 정의된 변수입니다.
+# 괄호 안의 논리 값은 벡터보다 짧으면 재활용됩니다. 이 트릭은 벡터에서 두 번째 요소를 가져오는 데 사용할 수 있지만 많은 문제의 원인이 되기도 합니다.
 x[c(T,F)]
 ```
 
-**Exercise 2**
+**연습 2**
 
-1. Get each third element from vector x
-2. Get only these values of vector x that are dividable by 4
-3. Get all elements of x which names are equal to 'a'
+1. 벡터 x에서 세 번째 요소마다 가져옵니다.
+2. 4로 나누어지는 벡터 x의 값만 가져옵니다.
+3. 이름이 'a'와 같은 x의 모든 요소를 가져옵니다.
 
-<details><summary>Answer</summary>
+<details><summary>답</summary>
 
 ```{r Intro-R3-10}
 # 1
 x[c(F,F,T)]
-#or
+#또는
 x[(1:length(x)) %% 3 == 0]
 
 # 2
@@ -363,44 +363,44 @@ x[names(x)=='a']
 ```
 </details>
 
-## Lists
-Vectors can be used to store values of the same type. They would not work If one needs to store information of different types, name and age of a person for instance. R lists allows to store variable of any types, including other lists. Lists are very flexible (too flexible to be honest) and can fulfill all you needs. Lists can be created by `list` function that is analogous to `c` function.
+## 목록
+벡터는 동일한 유형의 값을 저장하는 데 사용할 수 있습니다. 예를 들어 사람의 이름과 나이와 같이 다른 유형의 정보를 저장해야 하는 경우에는 작동하지 않습니다. R 목록을 사용하면 다른 목록을 포함하여 모든 유형의 변수를 저장할 수 있습니다. 목록은 매우 유연하며(솔직히 너무 유연함) 모든 요구 사항을 충족할 수 있습니다. 목록은 `c` 함수와 유사한 `list` 함수로 만들 수 있습니다.
 ```{r Intro-R4-1}
 l = list(1,'a',2:4,c('b','c'))
 l
 typeof(l)
-# function str can be used to ptint list in more compact way
+# str 함수를 사용하여 목록을 더 간결하게 인쇄할 수 있습니다.
 str(l)
-# lists can be named
+# 목록에 이름을 지정할 수 있습니다.
 l = list(name='Sam',yob=2001L,weight=70.5)
 str(l)
-# same three types of indexing can be used
-# numerical
+# 동일한 세 가지 유형의 인덱싱을 사용할 수 있습니다.
+# 숫자
 l[3:2]
-# by names 
+# 이름으로
 l[c('weight','name')]
-# logical
+# 논리
 l[c(F,T,F)]
 ```
-List indexing by `[` operator returns sublist of the original list. To get specific element of of list `[[` operator should be used:
+`[` 연산자로 목록을 인덱싱하면 원래 목록의 하위 목록이 반환됩니다. 목록의 특정 요소를 얻으려면 `[[` 연산자를 사용해야 합니다.
 ```{r Intro-R4-2}
-# this is list with single element that store one value
+# 이것은 하나의 값을 저장하는 단일 요소가 있는 목록입니다.
 l2 = l[3]
 typeof(l2)
 l2
-# this is numeric (double) vector with one value
+# 이것은 하나의 값을 가진 숫자(double) 벡터입니다.
 l3 = l[[3]]
 typeof(l3)
 l3
 ```
-Operator `[[` looks ugly, so for named vector one can use operator `$` that is completely identical to `[[`:
+`[[` 연산자는 보기 흉하므로 명명된 벡터의 경우 `$` 연산자를 사용할 수 있으며 이는 `[[`와 완전히 동일합니다.
 ```{r Intro-R4-3}
 l$name
 typeof(l$name)
 ```
-Any types of data can be stored in list
+목록에는 모든 유형의 데이터를 저장할 수 있습니다.
 ```{r Intro-R4-4}
-# even function!
+# 함수도 가능합니다!
 l = list(abc=letters[1:4],innerlist=list(a='a',b=1:10),sumfun = sum)
 str(l)
 l$innerlist$b
@@ -408,103 +408,103 @@ l$innerlist$b[5:1]
 l$sumfun(1:10)
 ```
 
-## Dictionaries 
-Unlike python, R have no dictionary (hashtable) objects. In most cases named vectors (or lists) can be used instead (but be careful with name duplication). Otherwise one can use environments as hash, but it is out of scope of this course.
+## 사전
+파이썬과 달리 R에는 사전(해시 테이블) 객체가 없습니다. 대부분의 경우 명명된 벡터(또는 목록)를 대신 사용할 수 있습니다(단, 이름 중복에 주의). 그렇지 않으면 해시로 환경을 사용할 수 있지만 이 과정의 범위를 벗어납니다.
 
-## Classes/S3
-R supports at least three different systems for object oriented programming (OOP). Most of R users do not need to create their own classes. But it is worth to know these systems to deal with existing packages. We will briefly discuss two of them: S3 and S4. 
-Lets start with S3 system. In OOP paradigm each variable is treated according to its class. R allows to add attributes to any variable. The attributes can be accessed, set and modified using `attributes` or `attr` functions.
+## 클래스/S3
+R은 객체 지향 프로그래밍(OOP)을 위한 최소 세 가지 다른 시스템을 지원합니다. 대부분의 R 사용자는 자신의 클래스를 만들 필요가 없습니다. 그러나 기존 패키지를 처리하려면 이러한 시스템을 아는 것이 좋습니다. 그 중 두 가지인 S3와 S4에 대해 간략하게 논의하겠습니다.
+S3 시스템부터 시작하겠습니다. OOP 패러다임에서 각 변수는 클래스에 따라 처리됩니다. R은 모든 변수에 속성을 추가할 수 있습니다. 속성은 `attributes` 또는 `attr` 함수를 사용하여 액세스, 설정 및 수정할 수 있습니다.
 ```{r Intro-R5-1}
 v = c(a=1,b=10,z=7)
 attributes(v)
 ```
-So, names of vector value are one of vector attribute. Normally, all attributes are accessed by specific functions such as `names`. S3 system uses attribute called `class` that can be accessed using function `class`. We will use `factor` class to illustrate S3 system. Factor is a class developed to store categorical information such as gender (male/female) or species (dog/cat/human). Categorical information can be stored as a text (that is OK in most of cases), but sometime factors are useful.
+따라서 벡터 값의 이름은 벡터 속성 중 하나입니다. 일반적으로 모든 속성은 `names`와 같은 특정 함수로 액세스됩니다. S3 시스템은 `class`라는 속성을 사용하며 `class` 함수를 사용하여 액세스할 수 있습니다. `factor` 클래스를 사용하여 S3 시스템을 설명하겠습니다. Factor는 성별(남성/여성) 또는 종(개/고양이/인간)과 같은 범주형 정보를 저장하기 위해 개발된 클래스입니다. 범주형 정보는 텍스트로 저장할 수 있지만(대부분의 경우 괜찮음) 때로는 요인이 유용합니다.
 ```{r Intro-R5-2}
-# t.test performs t.test for given vector and returns list with defined class attribute
+# t.test는 주어진 벡터에 대해 t.test를 수행하고 정의된 클래스 속성이 있는 목록을 반환합니다.
 f = factor(c('m','m','f'),levels = c('m','f','unk'))
-# internaly factors are integer vectors
+# 내부적으로 요인은 정수 벡터입니다.
 typeof(f)
-# but they have class attribute set to 'factor'
+# 그러나 'factor'로 설정된 클래스 속성이 있습니다.
 class(f)
-# it affects how they printed
+# 인쇄 방식에 영향을 줍니다.
 f
-# it will be printed differently if class is unset
+# 클래스가 설정되지 않으면 다르게 인쇄됩니다.
 f2 = unclass(f)
 class(f2)
 f2
 ```
-Some R functions (called generic, `print` for instance) can dispatch the function call, that is call specific function in dependence on its arguments. In this case it simply calls a functions with name that is combination of generic function name and class name separated by dot:
+일부 R 함수(일반적으로 `print`와 같은 제네릭)는 함수 호출을 디스패치할 수 있습니다. 즉, 인수에 따라 특정 함수를 호출합니다. 이 경우 제네릭 함수 이름과 점으로 구분된 클래스 이름의 조합인 이름으로 함수를 호출합니다.
 ```{r Intro-R5-3}
 print.factor(f2)
 ```
-while f2 is not a factor now, it still can be printed as factor if we call corresponding function manually.
+f2는 이제 요인이 아니지만 해당 함수를 수동으로 호출하면 요인으로 인쇄할 수 있습니다.
 
-## 2d data structures
-The types we discussed so far are one-dimensional, but some data (gene-to-cell expression matrix, or sample metadata) require 2d (or even Nd) structures (aka tables) to be stored. There are two 2d structures in R: arrays and data.frames. Arrays allows to store only values of a single type because internally arrays are vector. Data.frames can have columns of different types, while each column can contain values of only single type. Internally data.frames are lists of columns.
+## 2D 데이터 구조
+지금까지 논의한 유형은 1차원적이지만 일부 데이터(유전자-세포 발현 행렬 또는 샘플 메타데이터)는 저장하기 위해 2D(또는 Nd) 구조(일명 테이블)가 필요합니다. R에는 배열과 데이터 프레임이라는 두 가지 2D 구조가 있습니다. 배열은 내부적으로 배열이 벡터이기 때문에 단일 유형의 값만 저장할 수 있습니다. 데이터 프레임은 다른 유형의 열을 가질 수 있지만 각 열은 단일 유형의 값만 포함할 수 있습니다. 내부적으로 데이터 프레임은 열의 목록입니다.
 
-### Arrays
+### 배열
 ```{r Intro-R5-4}
 a = matrix(1:12,ncol=3)
 a
-# internaly array is an integer vector
+# 내부적으로 배열은 정수 벡터입니다.
 typeof(a)
-# with class 'matrix'
+# 'matrix' 클래스 포함
 class(a)
-# and attribute dim (that gives number of row and columns)
+# 및 속성 dim(행과 열의 수를 제공)
 attributes(a)
-# dimentions of matrix can be accessed using dedicated functions
+# 행렬의 차원은 전용 함수를 사용하여 액세스할 수 있습니다.
 dim(a)
 nrow(a)
 ncol(a)
-# arrays can be also named, but now names would be assigned to rows and columns
+# 배열에 이름을 지정할 수도 있지만 이제 이름은 행과 열에 할당됩니다.
 colnames(a) = letters[1:ncol(a)]
 rownames(a) = LETTERS[1:nrow(a)]
 a
 ```
-Array subsetting can be performed using same three approaches (by numbers, by names and logically), but now indexes will apply to rows and columns separately:
+배열 부분 집합화는 동일한 세 가지 접근 방식(숫자, 이름 및 논리)을 사용하여 수행할 수 있지만 이제 인덱스는 행과 열에 별도로 적용됩니다.
 ```{r Intro-R5-4-1}
-# select firts two rows and three columns in reversed order
-# comma separates row (left) and columns (right)
+# 처음 두 행과 세 열을 역순으로 선택합니다.
+# 쉼표는 행(왼쪽)과 열(오른쪽)을 구분합니다.
 a[1:2,3:1]
-# if you want to take all rows (columns) just leave left (right) place empty
-a[,2:3] #all rows
-a[c(4,2,3),] # all columns
+# 모든 행(열)을 가져오려면 왼쪽(오른쪽) 자리를 비워 둡니다.
+a[,2:3] # 모든 행
+a[c(4,2,3),] # 모든 열
 
-# rows and columns can be indexed by names
+# 행과 열은 이름으로 인덱싱할 수 있습니다.
 a[c('D','C'),c('b','b')]
-# logicaly
+# 논리적으로
 a[,c(T,F,T)]
-a[a[,1]>2,] # take all rows where values in first column are above 2
+a[a[,1]>2,] # 첫 번째 열의 값이 2보다 큰 모든 행을 가져옵니다.
 
-# indexing system can be mixed:
+# 인덱싱 시스템을 혼합할 수 있습니다.
 a[-2,c('c','b')]
 ```
 
-### Data.frames
-Data.frame is very similar to matrix but it allows to store values of different types in different columns. Data.frame can be created by `data.frame` function by specifying columns, all columns should be vectors of the same length.
+### 데이터 프레임
+데이터 프레임은 행렬과 매우 유사하지만 다른 열에 다른 유형의 값을 저장할 수 있습니다. 데이터 프레임은 열을 지정하여 `data.frame` 함수로 만들 수 있으며 모든 열은 동일한 길이의 벡터여야 합니다.
 ```{r Intro-R6-1}
 d = data.frame(name=c('Sam','John','Sara'),age=c(40,14,51),sex=factor('m','m','f'))
 class(d)
 typeof(d)
 d
 ```
-Similarly to arrays data.frames can have rownames and colnames. The only difference is that data.frame rownames should be unique:
+배열과 마찬가지로 데이터 프레임은 행 이름과 열 이름을 가질 수 있습니다. 유일한 차이점은 데이터 프레임 행 이름이 고유해야 한다는 것입니다.
 ```{r Intro-R6-2}
 colnames(d)
-#rownames(d) = c('S','J','S') it will throw exception since rowname 'S' is duplicated
+#rownames(d) = c('S','J','S') 행 이름 'S'가 중복되어 예외가 발생합니다.
 rownames(d) = c('Sm','Jn','Sr')
 d
 ```
-Indexing of data.frames is identical to array indexing:
+데이터 프레임의 인덱싱은 배열 인덱싱과 동일합니다.
 ```{r Intro-R6-3}
 d[c(3,1),c('sex','name')]
 ```
-But since data.frames are lists, operator `$` can be used as well to get single column:
+그러나 데이터 프레임은 목록이므로 `$` 연산자를 사용하여 단일 열을 가져올 수도 있습니다.
 ```{r Intro-R6-4}
 d$age
 ```
-## S4 objects
-S3 system allows to make functions which behavior depends on class of its first argument, but it cannot take into account other arguments. Additionally, S3 doesn't allow to customize data structures, variables used in S3 system are atomic vectors or lists. S4 system allows to solve these problems. The main difference of S4 system compared do S3 is that in S4 each class have formal definition that describes what data are stored in the objects of this class (compare to S3 where you can assign any class to any variable). The data is stored in slots that have names and specified types. One need to specify slots to create new class:
+## S4 객체
+S3 시스템은 첫 번째 인수의 클래스에 따라 동작이 달라지는 함수를 만들 수 있지만 다른 인수는 고려할 수 없습니다. 또한 S3는 데이터 구조를 사용자 정의할 수 없으며 S3 시스템에서 사용되는 변수는 원자 벡터 또는 목록입니다. S4 시스템을 사용하면 이러한 문제를 해결할 수 있습니다. S3와 비교하여 S4 시스템의 주요 차이점은 S4에서는 각 클래스에 이 클래스의 객체에 어떤 데이터가 저장되는지 설명하는 공식적인 정의가 있다는 것입니다(S3와 비교하여 모든 변수에 모든 클래스를 할당할 수 있음). 데이터는 이름과 지정된 유형이 있는 슬롯에 저장됩니다. 새 클래스를 만들려면 슬롯을 지정해야 합니다.
 ```{r Intro-R7-1}
 setClass("Person", 
   slots = c(
@@ -513,37 +513,37 @@ setClass("Person",
   )
 )
 ```
-Now we can create variable of this class
+이제 이 클래스의 변수를 만들 수 있습니다.
 ```{r Intro-R7-2}
 john = new("Person", name = "John Smith", age = 30)
 class(john)
 typeof(john)
 john
 ```
-Normally, slots can be accessed and modified by specific functions. For the class Person we specified above, one can expect function `name` to access name. But R allows to access slots directly using operator `@` (that is not a good style but might be very convenient):
+일반적으로 슬롯은 특정 함수로 액세스하고 수정할 수 있습니다. 위에서 지정한 Person 클래스의 경우 이름에 액세스하는 함수 `name`을 예상할 수 있습니다. 그러나 R은 `@` 연산자를 사용하여 슬롯에 직접 액세스할 수 있습니다(좋은 스타일은 아니지만 매우 편리할 수 있음).
 ```{r Intro-R7-3}
 john@name
-#names of all slots can be given by
+# 모든 슬롯의 이름은 다음으로 지정할 수 있습니다.
 slotNames(john)
-# to get slot by name
+# 이름으로 슬롯을 얻으려면
 slot(john,'age')
-#or
+#또는
 john@age
 ```
 
-You can find more information about S4 classes (including how to create generic functions) [here](https://adv-r.hadley.nz/s4.html).
-**Exercise 3**
-1. What are type and classes of `mtcars` variable?
-2. What attributes is has?
-3. What attribute is used to store rownames? What is about colnames?
-4. What are right functions to access these attributes?
-5. Select all cars that have 4 cylinders
-6. Select sub-table from mtcars that include cars with at least two carburetors and columns that names are three character long (use function `nchar`)
-7. Calculate matrix of correlations between columns of mtcars by `cm = cor(mtcars)`
-8. Answer Q1-3 for `cm`
-`mtcars` is a toy dataset loaded automatically when R session starts.
+S4 클래스에 대한 자세한 정보(제네릭 함수를 만드는 방법 포함)는 [여기](https://adv-r.hadley.nz/s4.html)에서 찾을 수 있습니다.
+**연습 3**
+1. `mtcars` 변수의 유형과 클래스는 무엇입니까?
+2. 어떤 속성을 가지고 있습니까?
+3. 행 이름을 저장하는 데 사용되는 속성은 무엇입니까? 열 이름은 어떻습니까?
+4. 이러한 속성에 액세스하는 올바른 함수는 무엇입니까?
+5. 4개의 실린더가 있는 모든 자동차를 선택합니다.
+6. mtcars에서 최소 2개의 카뷰레터가 있는 자동차와 이름이 3자인 열을 포함하는 하위 테이블을 선택합니다(함수 `nchar` 사용).
+7. `cm = cor(mtcars)`로 mtcars 열 간의 상관 행렬을 계산합니다.
+8. `cm`에 대해 Q1-3에 답합니다.
+`mtcars`는 R 세션이 시작될 때 자동으로 로드되는 장난감 데이터 세트입니다.
 
-<details><summary>Answer</summary>
+<details><summary>답</summary>
 
 ```{Intro-R7-4}
 # 1
@@ -552,8 +552,8 @@ type(mtcars)
 # 2
 attributes(mtcars)
 # 3
-# rownames are stored as row.names attribute
-# colnames are stored as names (because mtcars is list, and column names are just names of the list elements)
+# 행 이름은 row.names 속성으로 저장됩니다.
+# 열 이름은 names로 저장됩니다(mtcars는 목록이고 열 이름은 목록 요소의 이름일 뿐이므로).
 # 4
 rownames(mtcars)
 colnames(mtcars)
@@ -568,8 +568,8 @@ cm = cor(mtcars)
 class(cm)
 type(cm)
 attributes(cm)
-# rownames and colnames of array are stored as dimnames attribute (compare to data.frame above)
+# 배열의 행 이름과 열 이름은 dimnames 속성으로 저장됩니다(위의 데이터 프레임과 비교).
 ```
 </details>
-## More information
-You can get more information about any R commands relevant to these datatypes using by typing `?function` in an interactive session.
+## 추가 정보
+대화형 세션에서 `?function`을 입력하여 이러한 데이터 유형과 관련된 모든 R 명령에 대한 자세한 정보를 얻을 수 있습니다.
