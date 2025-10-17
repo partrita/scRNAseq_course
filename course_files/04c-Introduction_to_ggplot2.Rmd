@@ -6,22 +6,22 @@ output: html_document
 library(knitr)
 opts_chunk$set(cache=TRUE, cache.extra = list(R.version, sessionInfo()))
 ```
-## An Introduction to ggplot2
+## ggplot2 소개
 
-### What is ggplot2?
+### ggplot2란 무엇인가?
 
-ggplot2 is an R package designed by Hadley Wickham which facilitates data plotting. In this lab, we will touch briefly on some of the features of the package. If you would like to learn more about how to use ggplot2, we would recommend reading "ggplot2 Elegant graphics for data analysis", by Hadley Wickham.
+ggplot2는 Hadley Wickham이 설계한 R 패키지로 데이터 플로팅을 용이하게 합니다. 이 실습에서는 패키지의 일부 기능에 대해 간략하게 다룰 것입니다. ggplot2 사용 방법에 대해 더 자세히 알고 싶다면 Hadley Wickham의 "ggplot2 Elegant graphics for data analysis"를 읽는 것이 좋습니다.
 
 
-### Principles of ggplot2
+### ggplot2의 원리
 
-* Your data must be a dataframe if you want to plot it using ggplot2. 
-* Use the `aes` mapping function to specify how variables in the dataframe map to features on your plot
-* Use geoms to specify how your data should be represented on your graph eg. as a scatterplot, a barplot, a boxplot etc.
+* ggplot2를 사용하여 데이터를 플로팅하려면 데이터가 데이터 프레임이어야 합니다.
+* `aes` 매핑 함수를 사용하여 데이터 프레임의 변수가 플롯의 특징에 어떻게 매핑되는지 지정합니다.
+* 지옴을 사용하여 데이터를 그래프에 어떻게 표현할지 지정합니다(예: 산점도, 막대 그래프, 상자 그림 등).
 
-### Using the `aes` mapping function
+### `aes` 매핑 함수 사용하기
 
-The `aes` function specifies how variables in your dataframe map to features on your plot. To understand how this works, let's look at an example:
+`aes` 함수는 데이터 프레임의 변수가 플롯의 특징에 어떻게 매핑되는지 지정합니다. 이것이 어떻게 작동하는지 이해하기 위해 예를 살펴보겠습니다.
 
 ```{R ggplot1, eval=TRUE, message=FALSE}
 library(ggplot2)
@@ -35,50 +35,50 @@ counts
 ggplot(data = counts, mapping = aes(x = cell1, y = cell2))
 ```
 
-Let's take a closer look at the final command, `ggplot(data = counts, mapping = aes(x = cell1, y = cell2))`. `ggplot()` initialises a ggplot object and takes the arguments `data` and `mapping`. We pass our dataframe of counts to `data` and use the `aes()` function to specify that we would like to use the variable cell1 as our x variable and the variable cell2 as our y variable.
+마지막 명령인 `ggplot(data = counts, mapping = aes(x = cell1, y = cell2))`를 자세히 살펴보겠습니다. `ggplot()`은 ggplot 객체를 초기화하고 `data`와 `mapping` 인수를 사용합니다. 카운트 데이터 프레임을 `data`에 전달하고 `aes()` 함수를 사용하여 cell1 변수를 x 변수로, cell2 변수를 y 변수로 사용하도록 지정합니다.
 
-Task 1: Modify the command above to initialise a ggplot object where cell10 is the x variable and cell8 is the y variable.
+과제 1: 위 명령을 수정하여 cell10이 x 변수이고 cell8이 y 변수인 ggplot 객체를 초기화하십시오.
 
-Clearly, the plots we have just created are not very informative because no data is displayed on them. To display data, we will need to use geoms.
+분명히, 우리가 방금 만든 플롯은 데이터가 표시되지 않기 때문에 그다지 유익하지 않습니다. 데이터를 표시하려면 지옴을 사용해야 합니다.
 
-### Geoms
+### 지옴
 
-We can use geoms to specify how we would like data to be displayed on our graphs. For example, our choice of geom could specify that we would like our data to be displayed as a scatterplot, a barplot or a boxplot.
+지옴을 사용하여 데이터를 그래프에 어떻게 표시할지 지정할 수 있습니다. 예를 들어, 지옴 선택은 데이터를 산점도, 막대 그래프 또는 상자 그림으로 표시하도록 지정할 수 있습니다.
 
-Let's see how our graph would look as a scatterplot.
+그래프가 산점도로 어떻게 보이는지 살펴보겠습니다.
 
 ```{R ggplot2, eval=TRUE}
 ggplot(data = counts, mapping = aes(x = cell1, y = cell2)) + geom_point()
 ```
 
-Now we can see that there doesn't seem to be any correlation between gene expression in cell1 and cell2. Given we generated `counts` randomly, this isn't too surprising.
+이제 cell1과 cell2의 유전자 발현 사이에 상관 관계가 없는 것 같습니다. `counts`를 무작위로 생성했기 때문에 이것은 그다지 놀라운 일이 아닙니다.
 
-Task 2: Modify the command above to create a line plot. Hint: execute `?ggplot` and scroll down the help page. At the bottom is a link to the ggplot package index. Scroll through the index until you find the geom options.
+과제 2: 위 명령을 수정하여 선 그림을 만듭니다. 힌트: `?ggplot`을 실행하고 도움말 페이지를 아래로 스크롤합니다. 맨 아래에 ggplot 패키지 인덱스에 대한 링크가 있습니다. 지옴 옵션을 찾을 때까지 인덱스를 스크롤합니다.
 
-### Plotting data from more than 2 cells
+### 2개 이상의 셀에서 데이터 플로팅하기
 
-So far we've been considering the gene counts from 2 of the cells in our dataframe. But there are actually 10 cells in our dataframe and it would be nice to compare all of them. What if we wanted to plot data from all 10 cells at the same time?
+지금까지 데이터 프레임의 2개 셀에서 유전자 카운트를 고려했습니다. 그러나 실제로는 데이터 프레임에 10개의 셀이 있으며 모두 비교하는 것이 좋을 것입니다. 10개 셀 모두에서 동시에 데이터를 플로팅하고 싶다면 어떻게 해야 할까요?
 
-At the moment we can't do this because we are treating each individual cell as a variable and assigning that variable to either the x or the y axis. We could create a 10 dimensional graph to plot data from all 10 cells on, but this is a) not possible to do with ggplot and b) not very easy to interpret. What we could do instead is to tidy our data so that we had one variable representing cell ID and another variable representing gene counts, and plot those against each other. In code, this would look like:
+지금은 각 개별 셀을 변수로 취급하고 해당 변수를 x 또는 y 축에 할당하기 때문에 이 작업을 수행할 수 없습니다. 10개 셀 모두에서 데이터를 플로팅하기 위해 10차원 그래프를 만들 수 있지만 이것은 a) ggplot으로 수행할 수 없고 b) 해석하기가 쉽지 않습니다. 대신 데이터를 정리하여 셀 ID를 나타내는 변수 하나와 유전자 카운트를 나타내는 변수 하나를 만들고 서로에 대해 플로팅할 수 있습니다. 코드로 나타내면 다음과 같습니다.
 
 ```{R ggplot3, eval=TRUE}
 counts<-gather(counts, colnames(counts)[2:11], key = 'Cell_ID', value='Counts')
 head(counts)
 ```
 
-Essentially, the problem before was that our data was not tidy because one variable (Cell_ID) was spread over multiple columns. Now that we've fixed this problem, it is much easier for us to plot data from all 10 cells on one graph.
+본질적으로 이전의 문제는 데이터가 깔끔하지 않았다는 것입니다. 왜냐하면 하나의 변수(Cell_ID)가 여러 열에 걸쳐 있었기 때문입니다. 이제 이 문제를 해결했으므로 한 그래프에 10개 셀 모두에서 데이터를 훨씬 쉽게 플로팅할 수 있습니다.
 
 ```{R ggplot4, eval=TRUE}
 ggplot(counts,aes(x=Cell_ID, y=Counts)) + geom_boxplot()
 ```
 
-Task 3: Use the updated `counts` dataframe to plot a barplot with Cell_ID as the x variable and Counts as the y variable. Hint: you may find it helpful to read `?geom_bar`.
+과제 3: 업데이트된 `counts` 데이터 프레임을 사용하여 Cell_ID를 x 변수로, Counts를 y 변수로 하는 막대 그래프를 플로팅합니다. 힌트: `?geom_bar`를 읽는 것이 도움이 될 수 있습니다.
 
-Task 4: Use the updated `counts` dataframe to plot a scatterplot with Gene_ids as the x variable and Counts as the y variable.
+과제 4: 업데이트된 `counts` 데이터 프레임을 사용하여 Gene_ids를 x 변수로, Counts를 y 변수로 하는 산점도를 플로팅합니다.
 
-### Plotting heatmaps
+### 히트맵 플로팅하기
 
-A common method for visualising gene expression data is with a heatmap. Here we will use the R package `pheatmap` to perform this analysis with some gene expression data we will name `test`.
+유전자 발현 데이터를 시각화하는 일반적인 방법은 히트맵을 사용하는 것입니다. 여기서는 R 패키지 `pheatmap`을 사용하여 `test`라는 이름의 일부 유전자 발현 데이터로 이 분석을 수행합니다.
 
 ```{R ggplot5, eval=TRUE, message=FALSE}
 library(pheatmap)
@@ -92,27 +92,27 @@ rownames(test) = paste("Gene", 1:20, sep = "")
 pheatmap(test)
 ```
 
-Let's take a moment to work out what this graphic is showing us. Each row represents a gene and each column represents a cell. How highly expressed each gene is in each cell is represented by the colour of the corresponding box. For example, we can tell from this plot that gene18 is highly expressed in cell10 but lowly expressed in cell1.
+이 그래픽이 무엇을 보여주는지 잠시 살펴보겠습니다. 각 행은 유전자를 나타내고 각 열은 셀을 나타냅니다. 각 셀에서 각 유전자가 얼마나 높게 발현되는지는 해당 상자의 색상으로 표시됩니다. 예를 들어, 이 플롯에서 gene18은 cell10에서 높게 발현되지만 cell1에서는 낮게 발현된다는 것을 알 수 있습니다.
 
-This plot also gives us information on the results of a clustering algorithm. In general, clustering algorithms aim to split datapoints (eg.cells) into groups whose members are more alike one another than they are alike the rest of the datapoints. The trees drawn on the top and left hand sides of the graph are the results of clustering algorithms and enable us to see, for example, that cells 4,8,2,6 and 10 are more alike one another than they are alike cells 7,3,5,1 and 9. The tree on the left hand side of the graph represents the results of a clustering algorithm applied to the genes in our dataset.
+이 플롯은 또한 클러스터링 알고리즘의 결과에 대한 정보도 제공합니다. 일반적으로 클러스터링 알고리즘은 데이터 포인트(예: 셀)를 구성원이 나머지 데이터 포인트보다 서로 더 유사한 그룹으로 분할하는 것을 목표로 합니다. 그래프의 상단과 왼쪽에 그려진 트리는 클러스터링 알고리즘의 결과이며, 예를 들어 셀 4, 8, 2, 6, 10이 셀 7, 3, 5, 1, 9보다 서로 더 유사하다는 것을 알 수 있습니다. 그래프의 왼쪽에 있는 트리는 데이터 세트의 유전자에 적용된 클러스터링 알고리즘의 결과를 나타냅니다.
 
-If we look closely at the trees, we can see that eventually they have the same number of branches as there are cells and genes. In other words, the total number of cell clusters is the same as the total number of cells, and the total number of gene clusters is the same as the total number of genes. Clearly, this is not very informative, and will become impractical when we are looking at more than 10 cells and 20 genes. Fortunately, we can set the number of clusters we see on the plot. Let's try setting the number of gene clusters to 2:
+트리를 자세히 살펴보면 결국 셀과 유전자의 수만큼 가지가 있다는 것을 알 수 있습니다. 즉, 총 셀 클러스터 수는 총 셀 수와 같고 총 유전자 클러스터 수는 총 유전자 수와 같습니다. 분명히 이것은 그다지 유익하지 않으며 10개 이상의 셀과 20개 이상의 유전자를 볼 때 비실용적이 될 것입니다. 다행히도 플롯에 표시되는 클러스터 수를 설정할 수 있습니다. 유전자 클러스터 수를 2로 설정해 보겠습니다.
 
 ```{R ggplot6, eval=TRUE}
 pheatmap(test, kmeans_k = 2)
 ```
 
-Now we can see that the genes fall into two clusters - a cluster of 8 genes which are upregulated in cells 2, 10, 6, 4 and 8 relative to the other cells and a cluster of 12 genes which are downregulated in cells 2, 10, 6, 4 and 8 relative to the other cells.
+이제 유전자가 두 개의 클러스터로 나뉘는 것을 볼 수 있습니다. 다른 셀에 비해 셀 2, 10, 6, 4, 8에서 상향 조절된 8개 유전자 클러스터와 다른 셀에 비해 셀 2, 10, 6, 4, 8에서 하향 조절된 12개 유전자 클러스터입니다.
 
-Task 5: Try setting the number of clusters to 3. Which number of clusters do you think is more informative?
+과제 5: 클러스터 수를 3으로 설정해 보십시오. 어떤 클러스터 수가 더 유익하다고 생각하십니까?
 
-### Principal Component Analysis
+### 주성분 분석
 
-Principal component analysis (PCA) is a statistical procedure that uses a transformation to convert a set of observations into a set of values of linearly uncorrelated variables called principal components. The transformation is carried out so that the first principle component accounts for as much of the variability in the data as possible, and each following principle component accounts for the greatest amount of variance possible under the contraint that it must be orthogonal to the previous components.
+주성분 분석(PCA)은 변환을 사용하여 관측치 집합을 주성분이라고 하는 선형적으로 상관되지 않은 변수의 값 집합으로 변환하는 통계적 절차입니다. 변환은 첫 번째 주성분이 데이터의 변동성을 가능한 한 많이 설명하도록 수행되며, 각 후속 주성분은 이전 성분과 직교해야 한다는 제약 조건 하에서 가능한 가장 큰 분산을 설명합니다.
 
-PCA plots are a good way to get an overview of your data, and can sometimes help identify confounders which explain a high amount of the variability in your data. We will investigate how we can use PCA plots in single-cell RNA-seq analysis in more depth in a future lab, here the aim is to give you an overview of what PCA plots are and how they are generated.
+PCA 플롯은 데이터에 대한 개요를 얻는 좋은 방법이며 때로는 데이터의 변동성을 많이 설명하는 교란 요인을 식별하는 데 도움이 될 수 있습니다. 향후 실습에서 단일 세포 RNA-seq 분석에서 PCA 플롯을 어떻게 사용할 수 있는지 더 자세히 조사할 것이며, 여기서는 PCA 플롯이 무엇이며 어떻게 생성되는지에 대한 개요를 제공하는 것을 목표로 합니다.
 
-Let's make a PCA plot for our `test` data. We can use the  `ggfortify` package to let ggplot know how to interpret principle components.
+`test` 데이터에 대한 PCA 플롯을 만들어 보겠습니다. `ggfortify` 패키지를 사용하여 ggplot이 주성분을 어떻게 해석해야 하는지 알려줄 수 있습니다.
 
 ```{R ggplot7, eval=TRUE, message=FALSE}
 library(ggfortify)
@@ -120,9 +120,9 @@ Principal_Components<-prcomp(test)
 autoplot(Principal_Components, label=TRUE)
 ```
 
-Task 6: Compare your clusters to the pheatmap clusters. Are they related? (Hint: have a look at the gene tree for the first pheatmap we plotted)
+과제 6: 클러스터를 pheatmap 클러스터와 비교합니다. 관련이 있습니까? (힌트: 우리가 플로팅한 첫 번째 pheatmap의 유전자 트리를 살펴보십시오)
 
-Task 7: Produce a heatmap and PCA plot for `counts` (below):
+과제 7: `counts`에 대한 히트맵 및 PCA 플롯을 생성합니다(아래).
 
 ```{R ggplot8, eval=TRUE}
 set.seed(1)

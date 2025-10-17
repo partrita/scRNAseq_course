@@ -2,7 +2,7 @@
 output: html_document
 ---
 
-# Introduction to Single-Cell RNA-seq
+# 단일 세포 RNA-seq 소개
 
 ```{r Intro0, echo=FALSE}
 library(knitr)
@@ -10,235 +10,235 @@ opts_chunk$set(cache = TRUE, fig.align = "center", echo=FALSE)
 ```
 
 :::highlight
-**QUESTIONS**
+**질문**
 
-- What is single-cell RNA-seq and how does it compare to bulk RNA-seq?
-- What are some of the typical applications of scRNA-seq? 
-- How are samples typically prepared for scRNA-seq?
-- What are the differences between some of the most popular protocols and what are their advantages and disadvantages?
-- What experimental design choices should be considered in scRNA-seq?
-- What are some of the challenges of scRNA-seq data compared to bulk data?
+- 단일 세포 RNA-seq(scRNA-seq)란 무엇이며 대량 RNA-seq와 어떻게 비교됩니까?
+- scRNA-seq의 일반적인 응용 분야는 무엇입니까?
+- scRNA-seq를 위해 샘플은 일반적으로 어떻게 준비됩니까?
+- 가장 널리 사용되는 프로토콜 간의 차이점은 무엇이며 장단점은 무엇입니까?
+- scRNA-seq에서 어떤 실험 설계 선택을 고려해야 합니까?
+- 대량 데이터와 비교하여 scRNA-seq 데이터의 몇 가지 과제는 무엇입니까?
 :::
 
 
-## Overview of Single-Cell RNA-seq
+## 단일 세포 RNA-seq 개요
 
-RNA-seq allows profiling the transcripts in a sample in an efficient and cost-effective way.
-It was a major breakthrough in the late 00's and has become ever more popular since, largely replacing other transcriptome-profiling technologies such as microarrays. 
-Part of its success is due to the fact that RNA-seq allows for an unbiased sampling of all transcripts in a sample, rather than being limited to a pre-determined set of transcripts (as in microarrays or RT-qPCR). 
+RNA-seq를 사용하면 샘플의 전사체를 효율적이고 비용 효율적인 방식으로 프로파일링할 수 있습니다.
+이는 00년대 후반에 주요한 돌파구였으며 그 이후로 더욱 인기를 얻어 마이크로어레이와 같은 다른 전사체 프로파일링 기술을 대체했습니다.
+성공의 일부는 RNA-seq가 사전 결정된 전사체 세트(마이크로어레이 또는 RT-qPCR에서와 같이)로 제한되지 않고 샘플의 모든 전사체를 편향되지 않게 샘플링할 수 있다는 사실 때문입니다.
 
-Typically, RNA-seq has been used in samples composed of a mixture of cells, referred to as **bulk RNA-seq**, and has many applications. 
-For example, it can be used to characterise expression signatures between tissues in healthy/diseased, wild-type/mutant or control/treated samples. 
-Or in evolutionary studies, using comparative transcriptomics of tissue samples across different species [refs]. 
-Besides its use in transcript quantification, it can also be used to find and annotate new genes, gene isoforms, and other transcripts, both in model and non-model organisms. 
+일반적으로 RNA-seq는 **대량 RNA-seq**라고 하는 세포 혼합물로 구성된 샘플에 사용되었으며 많은 응용 분야가 있습니다.
+예를 들어 건강/질병, 야생형/돌연변이 또는 대조군/처리된 샘플에서 조직 간의 발현 특징을 특성화하는 데 사용할 수 있습니다.
+또는 진화 연구에서 여러 종에 걸쳐 조직 샘플의 비교 전사체학을 사용합니다[참조].
+전사체 정량화에 사용되는 것 외에도 모델 및 비모델 유기체 모두에서 새로운 유전자, 유전자 동위형 및 기타 전사체를 찾고 주석을 다는 데 사용할 수 있습니다.
 
-However, with bulk RNA-seq we can only estimate the **average expression level** for each gene across a population of cells, without regard for the heterogeneity in gene expression across individual cells of that sample. 
-Therefore, it is insufficient for studying heterogeneous systems, e.g. early development studies or complex tissues such as the brain.
+그러나 대량 RNA-seq를 사용하면 해당 샘플의 개별 세포에 걸친 유전자 발현의 이질성을 고려하지 않고 세포 집단에 걸쳐 각 유전자의 **평균 발현 수준**만 추정할 수 있습니다.
+따라서 초기 발생 연구 또는 뇌와 같은 복잡한 조직과 같은 이질적인 시스템을 연구하는 데는 불충분합니다.
 
-![Broad comparison of bulk vs single-cell RNA-seq. Image from [technologynetworks.com](https://cdn.technologynetworks.com/tn/images/body/11570107721805.jpg)(figures/bulk_vs_singlecell_sequencing.jpg)
+![대량 مقابل 단일 세포 RNA-seq의 광범위한 비교. 이미지 출처: [technologynetworks.com](https://cdn.technologynetworks.com/tn/images/body/11570107721805.jpg)(figures/bulk_vs_singlecell_sequencing.jpg)
 
-To overcome this limitation, new protocols were developed that allow applying RNA-seq at single-cell level (scRNA-seq), with its first publication in 2009 [@Tang2009-bu]. 
-This technology became more popular from around 2014 ([ref](https://doi.org/10.1038/nmeth.2801)), when new protocols and lower sequencing costs made it more accessible. 
-Unlike with the bulk approach, with scRNA-seq we can estimate a **distribution of expression levels** for each gene across a population of cells. 
+이 한계를 극복하기 위해 단일 세포 수준(scRNA-seq)에서 RNA-seq를 적용할 수 있는 새로운 프로토콜이 개발되었으며, 2009년에 첫 번째 간행물이 발표되었습니다[@Tang2009-bu].
+이 기술은 새로운 프로토콜과 낮은 시퀀싱 비용으로 더 쉽게 접근할 수 있게 된 2014년경부터 더 인기를 얻었습니다([ref](https://doi.org/10.1038/nmeth.2801)).
+대량 접근 방식과 달리 scRNA-seq를 사용하면 세포 집단에 걸쳐 각 유전자의 **발현 수준 분포**를 추정할 수 있습니다.
 
-This allows us to answer new biological questions where **cell-specific changes in the transcriptome** are important. For example discovering new or rare cell types, identifying differential cell composition between healthy/diseased tissues or understanding cell differentiation during development. 
-One of the most iconic uses of this technology is in building gene atlases (see box below), which provide a comprehensive compendium of the cell diversity in organisms, with many applications in health as well as fundamental research.
+이를 통해 **전사체에서 세포 특이적 변화**가 중요한 새로운 생물학적 질문에 답할 수 있습니다. 예를 들어 새롭거나 희귀한 세포 유형을 발견하고, 건강/질병 조직 간의 차등 세포 구성을 식별하고, 발생 중 세포 분화를 이해하는 것입니다.
+이 기술의 가장 상징적인 용도 중 하나는 아래 상자에 표시된 유전자 지도책을 구축하는 것입니다. 이는 유기체의 세포 다양성에 대한 포괄적인 개요를 제공하며 건강 및 기초 연구에 많은 응용 분야가 있습니다.
 
 :::note
-**Single-cell atlases**
+**단일 세포 지도책**
 
-There are many projects trying to provide a comprehensive catalogue of cells in an organism. 
-Here is a non-exhaustive list of some of these projects:
+유기체의 포괄적인 세포 목록을 제공하려는 많은 프로젝트가 있습니다.
+다음은 이러한 프로젝트 중 일부의 비소모적인 목록입니다.
 
-- [Human Cell Atlas](https://www.humancellatlas.org/) (*H. sapiens*)
+- [인간 세포 지도책](https://www.humancellatlas.org/) (*H. sapiens*)
 - [Tabula Muris](https://tabula-muris.ds.czbiohub.org/) (*M. musculus*)
-- [Fly Cell Atlas](https://flycellatlas.org/) (*D. melanogaster*)
-- [Cell Atlas of Worm](https://atlas.gs.washington.edu/worm-rna/) (*C. elegans*)
-- [Arabidopsis Root Atlas](https://bioit3.irc.ugent.be/plant-sc-atlas/root) (*A. thaliana*)
+- [초파리 세포 지도책](https://flycellatlas.org/) (*D. melanogaster*)
+- [벌레 세포 지도책](https://atlas.gs.washington.edu/worm-rna/) (*C. elegans*)
+- [애기장대 뿌리 지도책](https://bioit3.irc.ugent.be/plant-sc-atlas/root) (*A. thaliana*)
 :::
 
-scRNA-seq datasets range from hundreds to millions of cells per study, and increase in size every year. 
-There are several different protocols available, both commercial and open access, each with its own advantages and disadvantages. 
-We will discuss some of these aspects in the following sections. 
+scRNA-seq 데이터 세트는 연구당 수백에서 수백만 개의 세포에 이르며 매년 크기가 증가합니다.
+상업용 및 오픈 액세스 모두 여러 가지 다른 프로토콜을 사용할 수 있으며 각각 고유한 장점과 단점이 있습니다.
+다음 섹션에서 이러한 측면 중 일부에 대해 논의할 것입니다.
 
-```{r Exp-methods1, fig.cap="Moore's law in single cell transcriptomics, showing an increase in the throughput of experiments from tens to millions of cells in just over a decade. (image taken from [Svensson et al.](https://arxiv.org/abs/1704.01379))", out.width = '100%'}
+```{r Exp-methods1, fig.cap="단일 세포 전사체학의 무어의 법칙은 10년이 조금 넘는 기간 동안 실험 처리량이 수십 개에서 수백만 개의 세포로 증가했음을 보여줍니다. (이미지 출처: [Svensson et al.](https://arxiv.org/abs/1704.01379))", out.width = '100%'}
 knitr::include_graphics("figures/moores-law.png")
 ```
 
 
-## Sample Preparation Protocols
+## 샘플 준비 프로토콜
 
-Broadly speaking, a typical scRNA-seq protocol consists of the following steps (illustrated in the figure below):
+일반적으로 일반적인 scRNA-seq 프로토콜은 아래 그림에 설명된 대로 다음 단계로 구성됩니다.
 
-- Tissue dissection and cell dissociating to obtain a suspension of cells.
-- Optionally cells may be selected (e.g. based on membrane markers, fluorescent transgenes or staining dyes).
-- Capture single cells into individual reaction containers (e.g. wells or oil droplets).
-- Extracting the RNA from each cell.
-- Reverse-transcribing the RNA to more stable cDNA.
-- Amplifying the cDNA (either by _in vitro_ transcription or by PCR).
-- Preparing the sequencing library with adequate molecular adapters. 
-- Sequencing, usually with paired-end Illumina protocols.
-- Processing the raw data to obtain a count matrix of genes-by-cells
-- Carrying several downstream analysis (the focus of this course).
+- 조직 해부 및 세포 해리를 통해 세포 현탁액을 얻습니다.
+- 선택적으로 세포를 선택할 수 있습니다(예: 막 마커, 형광 트랜스진 또는 염색 염료 기준).
+- 단일 세포를 개별 반응 용기(예: 웰 또는 오일 방울)에 포획합니다.
+- 각 세포에서 RNA를 추출합니다.
+- RNA를 더 안정적인 cDNA로 역전사합니다.
+- cDNA를 증폭합니다(_시험관 내_ 전사 또는 PCR에 의해).
+- 적절한 분자 어댑터로 시퀀싱 라이브러리를 준비합니다.
+- 일반적으로 페어드 엔드 Illumina 프로토콜로 시퀀싱합니다.
+- 원시 데이터를 처리하여 유전자별 세포의 카운트 매트릭스를 얻습니다.
+- 여러 다운스트림 분석을 수행합니다(이 과정의 초점).
 
-This course deals mostly with the last step of this workflow, but it is important to consider some of the steps that come before that, as they have an impact on the properties of the data we get. 
+이 과정은 이 워크플로의 마지막 단계를 주로 다루지만, 그 이전에 오는 몇 가지 단계를 고려하는 것이 중요합니다. 왜냐하면 우리가 얻는 데이터의 속성에 영향을 미치기 때문입니다.
 
-![Schematic of a typical single-cell sequencing workflow. Abbreviations: IVT, _in vitro_ transcription; PCR, polymerase chain reaction; UMI, unique molecular identifier. Image from [Lafzi et al. 2018](https://doi.org/10.1038/s41596-018-0073-y).](figures/singlecell_sequencing_workflow.png)
+![일반적인 단일 세포 시퀀싱 워크플로의 개략도. 약어: IVT, _시험관 내_ 전사; PCR, 중합효소 연쇄 반응; UMI, 고유 분자 식별자. 이미지 출처: [Lafzi et al. 2018](https://doi.org/10.1038/s41596-018-0073-y).](figures/singlecell_sequencing_workflow.png)
 
 
 :::note
-**Single-nucleus RNA-seq**
+**단일 핵 RNA-seq**
 
-In tissues where cell dissociation is difficult or in frozen tissue samples, instead of isolating whole single cells it is possible to instead isolate single nuclei. 
-Apart from the isolation step, the protocol to prepare single-nuclei sequencing libraries is similar to that of single-cell protocols. 
-However, nuclear RNA usually contains a higher proportion of unprocessed RNA, with more of the sequenced transcripts containing introns. 
-This aspect needs to be considered in the data processing steps, which we detail in the following chapter. 
+세포 해리가 어렵거나 냉동된 조직 샘플의 경우 전체 단일 세포를 분리하는 대신 단일 핵을 분리할 수 있습니다.
+분리 단계 외에 단일 핵 시퀀싱 라이브러리를 준비하는 프로토콜은 단일 세포 프로토콜과 유사합니다.
+그러나 핵 RNA는 일반적으로 처리되지 않은 RNA의 비율이 더 높으며 시퀀싱된 전사체 중 더 많은 부분이 인트론을 포함합니다.
+이러한 측면은 다음 장에서 자세히 설명하는 데이터 처리 단계에서 고려해야 합니다.
 :::
 
-There are currently a wide diversity of protocols for preparing scRNA-seq data, each with its own strengths and weaknesses, which we will come to below. 
-These methods can be categorized in different ways, but the two most important aspects are __cell capture or isolation__ and __transcript quantification__. 
+현재 scRNA-seq 데이터를 준비하기 위한 다양한 프로토콜이 있으며 각각 고유한 장점과 단점이 있으며 아래에서 설명하겠습니다.
+이러한 방법은 여러 가지 방식으로 분류할 수 있지만 가장 중요한 두 가지 측면은 __세포 포획 또는 분리__ 및 __전사체 정량화__입니다.
 
-![Comparison of common scRNA-seq protocols. Abbreviations: cDNA, complementary DNA; DNA pol I, DNA polymerase I; FACS, fluorescence-activated cell sorting; PCR, polymerase chain reaction; RNase H, ribonuclease H; RT, reverse transcription; TSO, template-switching oligonucleotide. (source: [Chen, Teichman and Meyer, 2018](https://doi.org/10.1146/annurev-biodatasci-080917-013452))](figures/singlecell_protocols.jpeg)
+![일반적인 scRNA-seq 프로토콜 비교. 약어: cDNA, 상보적 DNA; DNA pol I, DNA 중합효소 I; FACS, 형광 활성화 세포 분류; PCR, 중합효소 연쇄 반응; RNase H, 리보뉴클레아제 H; RT, 역전사; TSO, 주형 전환 올리고뉴클레오티드. (출처: [Chen, Teichman and Meyer, 2018](https://doi.org/10.1146/annurev-biodatasci-080917-013452))](figures/singlecell_protocols.jpeg)
 
 
-## Cell Capture
+## 세포 포획
 
-The strategy used for capturing cells determines the throughput of the experiment (i.e. how many cells we isolate), how the cells are selected prior to sequencing, as well as what kind of additional information besides transcript sequencing can be obtained. 
-The three most widely used options are __microtitre-plate-based__, __microfluidic-array-based__ and __microfluidic-droplet-based__ methods.
+세포 포획에 사용되는 전략은 실험의 처리량(즉, 얼마나 많은 세포를 분리하는지), 시퀀싱 전에 세포를 선택하는 방법, 그리고 전사체 시퀀싱 외에 어떤 종류의 추가 정보를 얻을 수 있는지를 결정합니다.
+가장 널리 사용되는 세 가지 옵션은 __마이크로타이터 플레이트 기반__, __미세 유체 어레이 기반__ 및 __미세 유체 방울 기반__ 방법입니다.
 
-![Single cell isolation methods.](figures/cell_capture_methods.png)
+![단일 세포 분리 방법.](figures/cell_capture_methods.png)
 
-**Microtitre-plate** methods rely on isolating cells into individual wells of the plate using, for example, pipetting, microdissection or fluorescent activated cell sorting (FACS). 
-One advantage of well-based methods is that one can take pictures of the cells before library preparation, providing an additional data modality. 
-For example one can identify and discard damaged cells or find wells containing doublets (wells with two or more cells). 
-When using automatic FACS sorting, it is also possible to associate information such as cell size and the intensity of any used labels with the well coordinates, and therefore with individual cell indices in downstream analysis.
-The main drawback of these methods is that they are often low-throughput and the amount of work required per cell may be considerable.
+**마이크로타이터 플레이트** 방법은 피펫팅, 미세 해부 또는 형광 활성화 세포 분류(FACS)와 같은 방법을 사용하여 플레이트의 개별 웰에 세포를 분리하는 데 의존합니다.
+웰 기반 방법의 한 가지 장점은 라이브러리 준비 전에 세포의 사진을 찍어 추가 데이터 양식을 제공할 수 있다는 것입니다.
+예를 들어 손상된 세포를 식별하고 버리거나 이중체(둘 이상의 세포가 있는 웰)가 포함된 웰을 찾을 수 있습니다.
+자동 FACS 분류를 사용할 때 세포 크기 및 사용된 라벨의 강도와 같은 정보를 웰 좌표와 연관시켜 다운스트림 분석에서 개별 세포 지수와 연관시킬 수도 있습니다.
+이러한 방법의 주요 단점은 종종 처리량이 낮고 세포당 필요한 작업량이 상당할 수 있다는 것입니다.
 
-**Microfluidic-array** platforms, such as [Fluidigm's C1](https://www.fluidigm.com/products/c1-system#workflow), provide a more integrated system for capturing cells and for carrying out the reactions necessary for the library preparations. 
-Thus, they provide a higher throughput than microtitre-plate-based methods. Typically, only around 10% of cells are captured in a microfluidic platform and thus they are not appropriate if one is dealing with rare cell-types or very small amounts of input. 
-Care also has to be taken with the cell sizes captured by the arrays, as the nanowells are customised for particular sizes (this may therefore affect the unbiased sampling of cells in complex tissues). 
-Moreover, the chip is relatively expensive, but since reactions can be carried out in a smaller volume, money can be saved on reagents.
+**미세 유체 어레이** 플랫폼(예: [Fluidigm의 C1](https://www.fluidigm.com/products/c1-system#workflow))은 세포 포획 및 라이브러리 준비에 필요한 반응을 수행하기 위한 보다 통합된 시스템을 제공합니다.
+따라서 마이크로타이터 플레이트 기반 방법보다 더 높은 처리량을 제공합니다. 일반적으로 미세 유체 플랫폼에서는 약 10%의 세포만 포획되므로 희귀한 세포 유형이나 매우 적은 양의 입력을 다룰 때는 적합하지 않습니다.
+또한 나노웰이 특정 크기에 맞게 맞춤화되어 있기 때문에 어레이에 의해 포획되는 세포 크기에 주의해야 합니다(따라서 복잡한 조직에서 세포의 편향되지 않은 샘플링에 영향을 미칠 수 있음).
+또한 칩은 상대적으로 비싸지만 더 작은 부피에서 반응을 수행할 수 있으므로 시약 비용을 절약할 수 있습니다.
 
-**Microfluidic-droplet** methods offer the highest throughput and are the most popular method used nowadays. They work by encapsulating individual cells inside a nanoliter-sized oil droplet, together with a bead. The bead is loaded with enzymes and other components required to construct the library. In particular, each bead contains a unique barcode which is attached to all of the sequencing reads originating from that cell. Thus, all of the droplets can be pooled, sequenced together and the reads can subsequently be assigned to the cell of origin based on those barcodes. Droplet platforms have relatively cheap library preparation costs on the order of 0.05 USD/cell. Instead, sequencing costs often become the limiting factor and a typical experiment the coverage is low with only a few thousand different transcripts detected [@Ziegenhain2017-cu].
+**미세 유체 방울** 방법은 가장 높은 처리량을 제공하며 오늘날 가장 널리 사용되는 방법입니다. 이 방법은 개별 세포를 비드와 함께 나노리터 크기의 오일 방울 안에 캡슐화하여 작동합니다. 비드에는 라이브러리를 구성하는 데 필요한 효소 및 기타 구성 요소가 로드되어 있습니다. 특히 각 비드에는 해당 세포에서 유래한 모든 시퀀싱 리드에 부착되는 고유한 바코드가 포함되어 있습니다. 따라서 모든 방울을 풀링하고 함께 시퀀싱한 다음 해당 바코드를 기반으로 리드를 원래 세포에 할당할 수 있습니다. 방울 플랫폼은 세포당 0.05달러 정도의 비교적 저렴한 라이브러리 준비 비용을 가집니다. 대신 시퀀싱 비용이 종종 제한 요인이 되며 일반적인 실험에서는 적용 범위가 낮고 수천 개의 다른 전사체만 감지됩니다[@Ziegenhain2017-cu].
  
 :::note
-Fluorescence Activated Cell Sorting (FACS) can be used upstream of any of the capture methods, to select a sub-population of cells.
-A common way in which this is used is to stain the cells with a dye that distinguishes between live and dead cells (e.g. due to membrane rupture), thus enriching the cell suspension with viable cells.
+형광 활성화 세포 분류(FACS)는 세포의 하위 집단을 선택하기 위해 모든 포획 방법의 업스트림에서 사용할 수 있습니다.
+이것이 사용되는 일반적인 방법은 살아있는 세포와 죽은 세포를 구별하는 염료로 세포를 염색하여(예: 막 파열로 인해) 세포 현탁액을 생존 가능한 세포로 농축하는 것입니다.
 :::
 
 
-## Transcript Quantification
+## 전사체 정량화
 
-There are two types of transcript quantification: __full-length__ and __tag-based__. 
-Full-length protocols try to achieve a uniform read coverage across the whole transcript, whereas tag-based protocols only capture either the 5' or 3' ends. The choice of quantification method has important implications for what types of analyses the data can be used for. 
+전사체 정량화에는 __전장__ 및 __태그 기반__의 두 가지 유형이 있습니다.
+전장 프로토콜은 전체 전사체에 걸쳐 균일한 리드 적용 범위를 달성하려고 시도하는 반면 태그 기반 프로토콜은 5' 또는 3' 말단만 포획합니다. 정량화 방법의 선택은 데이터가 어떤 유형의 분석에 사용될 수 있는지에 중요한 영향을 미칩니다.
 
-Preparing full-length libraries for single-cell is essentially identical to what is done in bulk RNA-seq (Figure below), and is restricted to plate-based protocols such as SMART-seq2. 
-Although in theory full-length protocols should provide an even coverage of transcripts, there can sometimes be biases in the coverage across the gene body (illustrated below). 
-Full-length protocols also allow the detection of splice variants, which is very difficult to do with other protocols.
+단일 세포용 전장 라이브러리를 준비하는 것은 기본적으로 대량 RNA-seq에서 수행되는 것과 동일하며(아래 그림) SMART-seq2와 같은 플레이트 기반 프로토콜로 제한됩니다.
+이론적으로 전장 프로토콜은 전사체의 균일한 적용 범위를 제공해야 하지만 때로는 유전자 본체에 걸쳐 적용 범위에 편향이 있을 수 있습니다(아래 그림 참조).
+전장 프로토콜은 또한 다른 프로토콜로는 매우 어려운 스플라이스 변이체의 검출을 허용합니다.
 
-![Full-length RNA library preparation for Illumina sequencing. Samples are enriched for RNA containing a poly(A) tail, which avoids sequencing rRNA (at the cost of also missing other non-coding RNAs). The RNA is then fragmented and reverse-transcribed to more stable cDNA, Illumina adapters ligated to each molecule and finally PCR-amplified. In the case of single-cell RNA-seq, adapters with well-specific barcodes are used, allowing to identify sequencing reads belonging to individual cells. Image source []. ([source](https://www.labome.com/method/RNA-seq.html))](figures/RNA_library_preparation.png)
+![Illumina 시퀀싱을 위한 전장 RNA 라이브러리 준비. 샘플은 폴리(A) 꼬리를 포함하는 RNA에 대해 농축되며, 이는 rRNA 시퀀싱을 피합니다(또한 다른 비코딩 RNA도 놓치는 비용으로). 그런 다음 RNA를 단편화하고 더 안정적인 cDNA로 역전사하고, 각 분자에 Illumina 어댑터를 연결하고 마지막으로 PCR 증폭합니다. 단일 세포 RNA-seq의 경우 웰 특이적 바코드가 있는 어댑터를 사용하여 개별 세포에 속하는 시퀀싱 리드를 식별할 수 있습니다. 이미지 출처 []. ([출처](https://www.labome.com/method/RNA-seq.html))](figures/RNA_library_preparation.png)
 
-```{r Exprs-constr3, out.width = '90%', fig.cap="Example of 3' bias in the gene body coverage, after aligning the sequencing reads to the transcriptome. Each line represents the average coverage across all the genes in a cell. In this example, in addition to the 3' bias across all cells, there are three cells that look like outliers relative to the rest and should be removed from downstream analysis. These may be cells where RNA quality was poorer, e.g. due to degradation."}
+```{r Exprs-constr3, out.width = '90%', fig.cap="시퀀싱 리드를 전사체에 정렬한 후 유전자 본체 적용 범위에서 3' 편향의 예. 각 선은 세포의 모든 유전자에 대한 평균 적용 범위를 나타냅니다. 이 예에서 모든 세포에 걸쳐 3' 편향 외에 나머지 세포에 비해 이상치처럼 보이는 세 개의 세포가 있으며 다운스트림 분석에서 제거해야 합니다. 이는 RNA 품질이 더 나쁜 세포일 수 있습니다(예: 분해로 인해)."}
 knitr::include_graphics("figures/Exp1_RSEQC_geneBodyCoverage_plot_Combined.png")
 ```
 
-With tag-based protocols, only one of the ends (3' or 5') of the transcript is sequenced. 
-The main advantage of tag-based protocols is that they can be combined with unique molecular identifiers (UMIs), which can help improve the accuracy of transcript quantification. 
-The reason for this improvement has to do with the PCR amplification step during library preparation, which creates several duplicate copies of each molecule. 
-Because this amplification is exponential, molecules may be unfairly represented in the final library, leading to over-estimation of their expression due to these PCR duplicates.
-To address this problem, cell barcodes are uniquely tagged with a random nucleotide sequence, the UMI, which is therefore unique to a single molecule. 
-This UMI is part of the sequencing read and can then be computationally taken into account when quantifying the transcript's abundance. 
-Most current scRNA-seq protocols are tag-based, including the popular droplet-based _10x Chromium_ protocol, illustrated in the figure below. 
-One disadvantage of tag-based protocols is that, being restricted to one end of the transcript only, it reduces our ability to unambiguously align reads to a transcript, as well as making it difficult to distinguish different isoforms [@Archer2016-zq].
+태그 기반 프로토콜을 사용하면 전사체의 말단 중 하나(3' 또는 5')만 시퀀싱됩니다.
+태그 기반 프로토콜의 주요 장점은 전사체 정량화의 정확성을 향상시키는 데 도움이 될 수 있는 고유 분자 식별자(UMI)와 결합할 수 있다는 것입니다.
+이러한 개선의 이유는 라이브러리 준비 중 PCR 증폭 단계와 관련이 있으며, 이는 각 분자의 여러 중복 사본을 만듭니다.
+이 증폭은 지수적이므로 분자가 최종 라이브러리에서 불공정하게 표현되어 이러한 PCR 중복으로 인해 발현이 과대평가될 수 있습니다.
+이 문제를 해결하기 위해 세포 바코드는 단일 분자에 고유한 임의의 뉴클레오티드 서열인 UMI로 고유하게 태그가 지정됩니다.
+이 UMI는 시퀀싱 리드의 일부이며 전사체의 풍부함을 정량화할 때 계산적으로 고려될 수 있습니다.
+대부분의 현재 scRNA-seq 프로토콜은 인기 있는 방울 기반 _10x Chromium_ 프로토콜을 포함하여 태그 기반이며 아래 그림에 설명되어 있습니다.
+태그 기반 프로토콜의 한 가지 단점은 전사체의 한쪽 끝으로만 제한되어 리드를 전사체에 명확하게 정렬하는 능력을 감소시키고 다른 동위형을 구별하기 어렵게 만든다는 것입니다[@Archer2016-zq].
 
-![Protocol overview of 3' libraries using the _10X Chromium_ protocol. Cells are captured in individual oil droplets containing a bead (called GEMs). An individual bead contains adapters with a common barcode, but diverse and distinct _Unique Molecular Identifier_ (UMI) sequences. A poly(dT) primer is used to reverse-transcribe mRNA with poly-A tails into cDNA. The GEMs are then broken and the pooled cDNA (from all barcoded cells) is amplified by PCR. Finally, the cDNA is fragmented and another Illumina adapter is ligated at the other end of the molecule. The final library is composed of a read containing the cell-specific barcode (used to identify reads from different cells) and a molecule-specific UMI (used to quantify a gene's expression), while the second read contains sequence from the actual cDNA molecule and can be used to align it to a reference transcriptome. (source: [Chromium Next GEMSingle Cell 3ʹ User Guide](https://assets.ctfassets.net/an68im79xiti/1C16trEdzy1Folq5xbOijE/7e6fb1f504e130bd561d898384da99d9/CG000315_ChromiumNextGEMSingleCell3-_GeneExpression_v3.1_DualIndex__RevB.pdf))](figures/chromium_library.png)
+![_10X Chromium_ 프로토콜을 사용한 3' 라이브러리의 프로토콜 개요. 세포는 비드(GEM이라고 함)를 포함하는 개별 오일 방울에 포획됩니다. 개별 비드에는 공통 바코드가 있는 어댑터가 포함되어 있지만 다양하고 뚜렷한 _고유 분자 식별자_(UMI) 서열이 있습니다. 폴리(dT) 프라이머는 폴리-A 꼬리가 있는 mRNA를 cDNA로 역전사하는 데 사용됩니다. 그런 다음 GEM을 깨고 풀링된 cDNA(모든 바코드 세포에서)를 PCR로 증폭합니다. 마지막으로 cDNA를 단편화하고 다른 Illumina 어댑터를 분자의 다른 쪽 끝에 연결합니다. 최종 라이브러리는 세포 특이적 바코드(다른 세포의 리드를 식별하는 데 사용됨)와 분자 특이적 UMI(유전자의 발현을 정량화하는 데 사용됨)를 포함하는 리드로 구성되며, 두 번째 리드는 실제 cDNA 분자의 서열을 포함하며 참조 전사체에 정렬하는 데 사용할 수 있습니다. (출처: [Chromium Next GEMSingle Cell 3ʹ 사용자 가이드](https://assets.ctfassets.net/an68im79xiti/1C16trEdzy1Folq5xbOijE/7e6fb1f504e130bd561d898384da99d9/CG000315_ChromiumNextGEMSingleCell3-_GeneExpression_v3.1_DualIndex__RevB.pdf))](figures/chromium_library.png)
 
 :::note
-**5' or 3'?**
+**5' 또는 3'?**
 
-The difference between 5' and 3' tag-based protocols is which end of the transcript is sequenced. 
-Although 3' protocols are more commonly used, many protocols now allow sequencing from either end (e.g. [10x Chromium supports both](https://kb.10xgenomics.com/hc/en-us/articles/360000939852-What-is-the-difference-between-Single-Cell-3-and-5-Gene-Expression-libraries-)). 
-The advantage of 5'-end sequencing is that we obtain information about the transcription start site (TSS), which allows to explore whether there is differential TSS usage across cells. 
+5' 및 3' 태그 기반 프로토콜의 차이점은 전사체의 어느 쪽 끝이 시퀀싱되는지입니다.
+3' 프로토콜이 더 일반적으로 사용되지만 많은 프로토콜이 이제 양쪽 끝에서 시퀀싱을 허용합니다(예: [10x Chromium은 둘 다 지원](https://kb.10xgenomics.com/hc/en-us/articles/360000939852-What-is-the-difference-between-Single-Cell-3-and-5-Gene-Expression-libraries-)).
+5' 말단 시퀀싱의 장점은 전사 시작 부위(TSS)에 대한 정보를 얻을 수 있다는 것이며, 이를 통해 세포 간에 차등적인 TSS 사용이 있는지 탐색할 수 있습니다.
 :::
 
 
-## Experimental Design
+## 실험 설계
 
-Several considerations need to be taken into account when performing scRNA-seq experiments. 
-Factors such as the cost per cell, how many cells one needs, or how much to sequence each cell, may all influence our choice of protocol. 
-On the other hand, care has to be taken to avoid biases due to batches being processed at different times and a lack of adequate replication may also constrain the types of analysis that can be done and therefore limit our ability to answer some questions of interest. 
+scRNA-seq 실험을 수행할 때 몇 가지 고려 사항을 고려해야 합니다.
+세포당 비용, 필요한 세포 수 또는 각 세포를 얼마나 시퀀싱해야 하는지와 같은 요인은 모두 프로토콜 선택에 영향을 미칠 수 있습니다.
+반면에 다른 시간에 처리되는 배치로 인한 편향을 피하기 위해 주의를 기울여야 하며 적절한 복제가 부족하면 수행할 수 있는 분석 유형이 제한되어 관심 있는 일부 질문에 답하는 능력이 제한될 수도 있습니다.
 
 
-### What Protocol Should I Choose?
+### 어떤 프로토콜을 선택해야 합니까?
 
-The most suitable platform depends on the biological question at hand. For example, if one is interested in characterizing the composition of a heterogeneous tissue, then a droplet-based method is more appropriate, as it allows a very large number of cells to be captured in a mostly unbiased manner. On the other hand, if one is interested in characterizing a specific cell-population for which there is a known surface marker, then it is probably best to enrich using FACS and then sequence a smaller number of cells at higher sequencing depth.
+가장 적합한 플랫폼은 당면한 생물학적 질문에 따라 다릅니다. 예를 들어, 이질적인 조직의 구성을 특성화하는 데 관심이 있다면 방울 기반 방법이 더 적합합니다. 왜냐하면 매우 많은 수의 세포를 대부분 편향되지 않은 방식으로 포획할 수 있기 때문입니다. 반면에 알려진 표면 마커가 있는 특정 세포 집단을 특성화하는 데 관심이 있다면 FACS를 사용하여 농축한 다음 더 적은 수의 세포를 더 높은 시퀀싱 깊이로 시퀀싱하는 것이 가장 좋습니다.
 
-Clearly, full-length transcript quantification will be more appropriate if one is interested in studying different isoforms, since tagged protocols are much more limited in this regard. By contrast, UMIs can only be used with tagged protocols and they can improve gene-level quantification.
+분명히, 태그가 지정된 프로토콜은 이 점에서 훨씬 더 제한적이므로 다른 동위형을 연구하는 데 관심이 있다면 전장 전사체 정량화가 더 적절할 것입니다. 대조적으로, UMI는 태그가 지정된 프로토콜에서만 사용할 수 있으며 유전자 수준 정량화를 향상시킬 수 있습니다.
 
-If one is interested in rare cell types (for which known markers are not available), then more cells need to be sequenced, which will increase the cost of the experiment. 
-A useful tool to estimate how many cells to sequence has been developed by the Satija Lab: https://satijalab.org/howmanycells/.
+희귀한 세포 유형(알려진 마커를 사용할 수 없는 경우)에 관심이 있다면 더 많은 세포를 시퀀싱해야 하므로 실험 비용이 증가합니다.
+시퀀싱할 세포 수를 추정하는 유용한 도구는 Satija Lab에서 개발했습니다: https://satijalab.org/howmanycells/.
 
-Another way to decide on which method to use, is to rely on studies dedicated to comparing different protocols. These studies focus on issues such as sensitivity (how many genes are detected per cell), their accuracy (e.g. compared to bulk RNA-seq) and in their ability to recover all cell types present in a sample (tested on commercially available cell mixtures). 
-For example, a study by [Ding et al. 2020](https://doi.org/10.1038/s41587-020-0465-8) illustrates how low-throughput methods have higher sensitivity compared to high-throughput methods, such as 10x Chromium (Figure below). 
-On the other hand, low-throughput methods did not capture some of the rarer cell types in their samples, leading to an incomplete characterisation of the cell population. 
+어떤 방법을 사용할지 결정하는 또 다른 방법은 다른 프로토콜을 비교하는 데 전념하는 연구에 의존하는 것입니다. 이러한 연구는 감도(세포당 얼마나 많은 유전자가 검출되는지), 정확도(예: 대량 RNA-seq와 비교) 및 샘플에 존재하는 모든 세포 유형을 복구하는 능력(상업적으로 이용 가능한 세포 혼합물에 대해 테스트됨)과 같은 문제에 중점을 둡니다.
+예를 들어, [Ding et al. 2020](https://doi.org/10.1038/s41587-020-0465-8)의 연구는 10x Chromium과 같은 고처리량 방법에 비해 저처리량 방법이 더 높은 감도를 갖는 방법을 보여줍니다(아래 그림).
+반면에 저처리량 방법은 샘플에서 더 희귀한 세포 유형 중 일부를 포획하지 못하여 세포 집단의 불완전한 특성화로 이어졌습니다.
 
-![Transcript detection sensitivity of different methods in a commercial mixture of peripheral blood mononuclear cells (PBMCs). The figure is taken from [Ding et al.](https://doi.org/10.1038/s41587-020-0465-8) and shows a) the number of distinct UMIs detected per cell (for methods using tag-based transcript quantification) and b) the number of detected genes per cell across methods. Results from two experimental replicates are shown.](figures/methods_sensitivity.png)
+![말초 혈액 단핵 세포(PBMC)의 상업적 혼합물에서 다른 방법의 전사체 검출 감도. 이 그림은 [Ding et al.](https://doi.org/10.1038/s41587-020-0465-8)에서 가져왔으며 a) 세포당 검출된 고유 UMI 수(태그 기반 전사체 정량화를 사용하는 방법의 경우) 및 b) 방법 전반에 걸쳐 세포당 검출된 유전자 수를 보여줍니다. 두 개의 실험적 복제 결과가 표시됩니다.](figures/methods_sensitivity.png)
 
-Another study by Ziegenhain et al. [@Ziegenhain2017-cu] compared five different protocols on the same sample of mouse embryonic stem cells (mESCs), reaching similar conclusions. 
-And finally, a study by Svensson et al. [@Svensson2017-op] used synthetic transcripts (spike-ins) with known concentrations to measure the accuracy and sensitivity of different protocols. Comparing a wide range of studies, they also reported substantial differences between the protocols (Figure below).
+Ziegenhain 등의 또 다른 연구[@Ziegenhain2017-cu]는 동일한 마우스 배아 줄기 세포(mESC) 샘플에 대해 5가지 다른 프로토콜을 비교하여 유사한 결론에 도달했습니다.
+그리고 마지막으로, Svensson 등의 연구[@Svensson2017-op]는 알려진 농도의 합성 전사체(스파이크인)를 사용하여 다른 프로토콜의 정확도와 감도를 측정했습니다. 광범위한 연구를 비교하여 프로토콜 간에 상당한 차이가 있음을 보고했습니다(아래 그림).
 
-```{r Exp-methods6, out.width = '100%', fig.cap="Figure from [Svensson et al.](https://doi.org/10.1038/nmeth.4220), comparing different protocols in relation to their a) accuracy (measured as the Pearson's correlation with bulk RNA-seq data) and b) sensitivity (number of detected molecules)."}
+```{r Exp-methods6, out.width = '100%', fig.cap="[Svensson et al.](https://doi.org/10.1038/nmeth.4220)의 그림으로, a) 정확도(대량 RNA-seq 데이터와의 Pearson 상관 계수로 측정) 및 b) 감도(검출된 분자 수)와 관련하여 다른 프로토콜을 비교합니다."}
 knitr::include_graphics("figures/svenssonTeichmannFig2.png")
 ```
 
-As protocols are developed and improved, and new computational methods for quantifying the technical noise emerge, it is likely that future studies will help us gain further insights regarding the strengths of the different methods. These comparative studies are helpful not only to decide on which protocol to use, but also for developing new methods as the benchmarking makes it possible to determine what strategies are the most useful ones.
+프로토콜이 개발 및 개선되고 기술적 노이즈를 정량화하기 위한 새로운 계산 방법이 등장함에 따라 향후 연구는 다른 방법의 강점에 대한 추가 통찰력을 얻는 데 도움이 될 것입니다. 이러한 비교 연구는 사용할 프로토콜을 결정하는 데 도움이 될 뿐만 아니라 벤치마킹을 통해 가장 유용한 전략이 무엇인지 결정할 수 있으므로 새로운 방법을 개발하는 데도 도움이 됩니다.
 
-Besides differences in throughput and sensitivity between protocols, **cost** may also be a deciding factor when planning a scRNA-seq experiment. 
-It is difficult to precisely estimate how much an experiment will cost, although we point to this tool from the Satija Lab as a starting point: https://satijalab.org/costpercell/. 
-For example, some droplet-based protocols such as Drop-seq are cheaper than the commercial alternatives such as 10x Chromium. However, they require the labs to be equipped to prepare the libraries, as well as trained staff and dedicated time (costing salary money). 
+프로토콜 간의 처리량 및 감도 차이 외에도 **비용**은 scRNA-seq 실험을 계획할 때 결정적인 요인이 될 수도 있습니다.
+실험 비용이 얼마나 들지 정확하게 추정하기는 어렵지만 Satija Lab의 이 도구를 시작점으로 지적합니다: https://satijalab.org/costpercell/.
+예를 들어 Drop-seq와 같은 일부 방울 기반 프로토콜은 10x Chromium과 같은 상업적 대안보다 저렴합니다. 그러나 실험실에서 라이브러리를 준비할 수 있는 장비를 갖추고 있어야 하며 훈련된 직원과 전용 시간(급여 비용)이 필요합니다.
 
-Methods such as _cell hashing_ ([Stoeckius et al.](https://doi.org/10.1186/s13059-018-1603-1)) may further reduce the costs of sequencing using current platforms. 
-This method in particular consists of attaching oligo-tags to cell membranes, allowing more cells from multiple samples to be loaded per experiment, which can later be demultiplexed during the analysis.
-
-
-### Data Challenges
-
-The main difference between bulk and single cell RNA-seq is that each sequencing library represents a single cell, instead of a population of cells. 
-Therefore, there is no way to have "biological replicates" at a single-cell level: each cell is unique and impossible to replicate.
-Instead, cells can be clustered by their similarity, and comparisons can then be done across groups of similar cells (as we shall see later in the course).
-
-Another big challenge in single-cell RNA-seq is that we have a very low amount of starting material per cell. 
-This results in very _sparse_ data, where most of the genes remain undetected and so our data contains many zeros. 
-These may either be due to the gene not being expressed in the cell (a "real" zero) or the gene was expressed but we were unable to detect it (a "dropout"). 
-This leads to cell-to-cell variation that is not always biological but rather due to technical issues caused by __uneven PCR amplification__ across cells and __gene "dropouts"__ (where a gene is detected in one cell but absent from another [@Kharchenko2014-ts]).
-Improving the transcript capture efficiency and reducing the amplification bias are solutions for these problems and still active areas of technical research. 
-However, as we shall see in this course, it is possible to alleviate some of these issues through proper data normalisation.
-
-Another important aspect to take into account are **batch effects**. 
-These can be observed even when sequencing the same material using different technologies (figure below), and if not properly normalised, can lead to incorrect conclusions. 
-
-![The same cell population was sequenced with three different single-cell protocols (colours). Adapted from [Zhang et al.](https://doi.org/10.1016/j.molcel.2018.10.020).](figures/batch_effect_protocols.png)
-
-The processing of samples should also be done in a manner that avoids **confounding** between experimentally controlled variables (such as a treatment, a genotype or a disease state) and the time when the samples are prepared and sequenced. 
-For example, if planning an experiment to compare healthy and diseased tissues from 10 patients each, if only 10 samples can be processed per day, it is best to do 5 healthy + 5 diseased together each day, rather than prepare all healthy samples one day and all diseased samples in another (figure). 
-Another consideration is to ensure that there is **replication** of tissue samples. 
-For example, when collecting tissue from an organ, it may be a good idea to take multiple samples from different parts of the organ. 
-Or consider the time of day when samples/replicates are collected (due to possible circadian changes in gene expression). 
-In summary, all the common best practices in experimental design should be taken into account when performing scRNA-seq.
-
-![Illustration of a confounded (top panels) and balanced (bottom panels) designs. Shapes denote different sample types (e.g. tissues or patients) and colours processing batches. In the confounded design it's impossible to disentangle biological variation from variation due to the processing batch. In the balanced design, by using tissue replicates and mixing them across batches, it is possible to distinguish between biological and batch-related variation. Figure from [Hicks et al.](https://doi.org/10.1093/biostatistics/kxx053).](figures/balanced_design.png)
+_세포 해싱_([Stoeckius et al.](https://doi.org/10.1186/s13059-018-1603-1))과 같은 방법은 현재 플랫폼을 사용한 시퀀싱 비용을 더욱 줄일 수 있습니다.
+이 방법은 특히 세포막에 올리고 태그를 부착하여 여러 샘플에서 더 많은 세포를 실험당 로드할 수 있도록 하며, 나중에 분석 중에 다중 분리할 수 있습니다.
 
 
+### 데이터 과제
 
-## Summary
+대량 및 단일 세포 RNA-seq의 주요 차이점은 각 시퀀싱 라이브러리가 세포 집단 대신 단일 세포를 나타낸다는 것입니다.
+따라서 단일 세포 수준에서 "생물학적 복제"를 가질 방법이 없습니다. 각 세포는 고유하며 복제할 수 없습니다.
+대신 세포는 유사성에 따라 클러스터링될 수 있으며 그런 다음 유사한 세포 그룹 간에 비교를 수행할 수 있습니다(과정 뒷부분에서 볼 수 있듯이).
+
+단일 세포 RNA-seq의 또 다른 큰 과제는 세포당 시작 물질의 양이 매우 적다는 것입니다.
+이로 인해 대부분의 유전자가 검출되지 않는 매우 _희소한_ 데이터가 생성되므로 데이터에 0이 많이 포함됩니다.
+이는 유전자가 세포에서 발현되지 않았기 때문일 수도 있고("실제" 0) 유전자가 발현되었지만 검출할 수 없었기 때문일 수도 있습니다("탈락").
+이로 인해 항상 생물학적인 것이 아니라 __세포 간의 불균일한 PCR 증폭__ 및 __유전자 "탈락"__으로 인한 기술적 문제로 인한 세포 간 변이가 발생합니다(한 세포에서는 유전자가 검출되지만 다른 세포에서는 없음[@Kharchenko2014-ts]).
+전사체 포획 효율을 개선하고 증폭 편향을 줄이는 것이 이러한 문제에 대한 해결책이며 여전히 기술 연구의 활발한 분야입니다.
+그러나 이 과정에서 보게 되겠지만 적절한 데이터 정규화를 통해 이러한 문제 중 일부를 완화할 수 있습니다.
+
+고려해야 할 또 다른 중요한 측면은 **배치 효과**입니다.
+이러한 효과는 다른 기술을 사용하여 동일한 재료를 시퀀싱할 때도 관찰될 수 있으며(아래 그림), 제대로 정규화되지 않으면 잘못된 결론으로 이어질 수 있습니다.
+
+![동일한 세포 집단을 세 가지 다른 단일 세포 프로토콜(색상)로 시퀀싱했습니다. [Zhang et al.](https://doi.org/10.1016/j.molcel.2018.10.020)에서 수정.] (figures/batch_effect_protocols.png)
+
+샘플 처리는 또한 실험적으로 제어되는 변수(예: 치료, 유전자형 또는 질병 상태)와 샘플을 준비하고 시퀀싱하는 시간 간의 **혼란**을 피하는 방식으로 수행되어야 합니다.
+예를 들어, 각각 10명의 환자로부터 건강한 조직과 질병 조직을 비교하는 실험을 계획할 때 하루에 10개의 샘플만 처리할 수 있다면 모든 건강한 샘플을 하루에 준비하고 모든 질병 샘플을 다른 날에 준비하는 것보다 매일 5개의 건강한 샘플 + 5개의 질병 샘플을 함께 처리하는 것이 가장 좋습니다(그림).
+또 다른 고려 사항은 조직 샘플의 **복제**가 있는지 확인하는 것입니다.
+예를 들어, 장기에서 조직을 수집할 때 장기의 다른 부분에서 여러 샘플을 채취하는 것이 좋습니다.
+또는 샘플/복제물을 수집하는 시간(유전자 발현의 일주기 변화 가능성으로 인해)을 고려하십시오.
+요약하면, scRNA-seq를 수행할 때 실험 설계의 모든 일반적인 모범 사례를 고려해야 합니다.
+
+![혼란된(상단 패널) 및 균형 잡힌(하단 패널) 디자인의 그림. 모양은 다른 샘플 유형(예: 조직 또는 환자)을 나타내고 색상은 처리 배치를 나타냅니다. 혼란된 디자인에서는 처리 배치로 인한 변동과 생물학적 변동을 분리하는 것이 불가능합니다. 균형 잡힌 디자인에서는 조직 복제물을 사용하고 배치 간에 혼합함으로써 생물학적 변동과 배치 관련 변동을 구별할 수 있습니다. 그림 출처: [Hicks et al.](https://doi.org/10.1093/biostatistics/kxx053).](figures/balanced_design.png)
+
+
+
+## 요약
 
 :::highlight
-**KEY POINTS**
+**핵심 사항**
 
-- scRNA-seq is ideally suited to study heterogeneous populations of cells. For example to identify the types of cells that compose a tissue, define “transcriptional fingerprints” for different cell types, study cell differentiation, explore changes in cell composition due to disease or environmental factors, amongst others. 
-- A typical sample preparation workflow consists of isolating single cells (or nuclei), converting the RNA into cDNA, preparing a sequencing library (Illumina) and sequencing. 
-- Many single-cell protocols have been developed, some openly available, others provided commercially. These mainly differ in their throughput (how many cells are captured per experiment), the type of quantification (full-length or tag-based) and also cost. 
-- SMART-seq2 is a popular low-throughput method, providing full-length transcript quantification. It is ideally suited for studying a smaller group of cells in greater detail (e.g. differential isoform usage, characterisation of lowly-expressed transcripts).
-- 10x Chromium is a popular high-throughput method, using UMIs for transcript quantification (from either 3' or 5' ends). It is ideally suited to study highly heterogeneous tissues and sample large populations of cells at scale.
-- When planning an experiment, care should be taken to avoid confounding due to batch effects as well as ensuring an adequate level of replication to address questions of interest. 
+- scRNA-seq는 이질적인 세포 집단을 연구하는 데 이상적입니다. 예를 들어 조직을 구성하는 세포 유형을 식별하고, 다른 세포 유형에 대한 "전사 지문"을 정의하고, 세포 분화를 연구하고, 질병이나 환경 요인으로 인한 세포 구성의 변화를 탐색하는 등의 작업을 수행합니다.
+- 일반적인 샘플 준비 워크플로는 단일 세포(또는 핵)를 분리하고, RNA를 cDNA로 변환하고, 시퀀싱 라이브러리(Illumina)를 준비하고, 시퀀싱하는 것으로 구성됩니다.
+- 많은 단일 세포 프로토콜이 개발되었으며 일부는 공개적으로 사용 가능하고 다른 일부는 상업적으로 제공됩니다. 이들은 주로 처리량(실험당 포획되는 세포 수), 정량화 유형(전장 또는 태그 기반) 및 비용이 다릅니다.
+- SMART-seq2는 전장 전사체 정량화를 제공하는 인기 있는 저처리량 방법입니다. 더 작은 세포 그룹을 더 자세히 연구하는 데 이상적입니다(예: 차등 동위형 사용, 저발현 전사체 특성화).
+- 10x Chromium은 전사체 정량화(3' 또는 5' 말단에서)에 UMI를 사용하는 인기 있는 고처리량 방법입니다. 매우 이질적인 조직을 연구하고 대규모로 많은 세포 집단을 샘플링하는 데 이상적입니다.
+- 실험을 계획할 때 배치 효과로 인한 혼란을 피하고 관심 있는 질문을 해결하기 위해 적절한 수준의 복제를 보장하도록 주의해야 합니다.
 :::

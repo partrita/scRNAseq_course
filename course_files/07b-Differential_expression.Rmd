@@ -2,37 +2,36 @@
 output: html_document
 ---
 
-## Differential Expression (DE) Analysis
+## 차등 발현(DE) 분석
 
 ```{r de-intro0, echo=FALSE}
 library(knitr)
 opts_chunk$set(cache = TRUE, fig.align = "center")
 ```
 
-### Bulk RNA-seq
+### 대량 RNA-seq
 
-One of the most common types of analyses when working with bulk RNA-seq data is to identify differentially expressed genes. By comparing the genes that change between two conditions, e.g. mutant and wild-type or stimulated and unstimulated, it is possible to characterize the molecular mechanisms underlying the change.
+대량 RNA-seq 데이터로 작업할 때 가장 일반적인 분석 유형 중 하나는 차등적으로 발현되는 유전자를 식별하는 것입니다. 두 조건(예: 돌연변이 및 야생형 또는 자극 및 비자극) 간에 변화하는 유전자를 비교함으로써 변화의 기본이 되는 분자 메커니즘을 특성화할 수 있습니다.
 
-Several different methods, e.g. [DESeq2](https://bioconductor.org/packages/DESeq2) and [edgeR](https://bioconductor.org/packages/release/bioc/html/edgeR.html),
-have been developed for bulk RNA-seq. Moreover, there are also extensive [datasets](http://genomebiology.biomedcentral.com/articles/10.1186/gb-2013-14-9-r95) available where the RNA-seq data has been validated using RT-qPCR. These data can be used to benchmark DE finding algorithms and the available evidence suggests that the algorithms are performing quite well.
+여러 가지 다른 방법(예: [DESeq2](https://bioconductor.org/packages/DESeq2) 및 [edgeR](https://bioconductor.org/packages/release/bioc/html/edgeR.html))이 대량 RNA-seq를 위해 개발되었습니다. 또한 RNA-seq 데이터가 RT-qPCR을 사용하여 검증된 광범위한 [데이터 세트](http://genomebiology.biomedcentral.com/articles/10.1186/gb-2013-14-9-r95)도 있습니다. 이 데이터는 DE 찾기 알고리즘을 벤치마킹하는 데 사용할 수 있으며 사용 가능한 증거는 알고리즘이 매우 잘 수행되고 있음을 시사합니다.
 
-### Single Cell RNA-seq
+### 단일 세포 RNA-seq
 
-In contrast to bulk RNA-seq, in scRNA-seq we usually do not have a defined set of experimental conditions. Instead, as was shown in a previous chapter (\@ref(clust-methods)) we can identify the cell groups by using an unsupervised clustering approach. Once the groups have been identified one can find differentially expressed genes either by comparing the differences in variance between the groups (like the Kruskal-Wallis test implemented in SC3), or by comparing gene expression between clusters in a pairwise manner. In the following chapter we will mainly consider tools developed for pairwise comparisons.
+대량 RNA-seq와 달리 scRNA-seq에서는 일반적으로 정의된 실험 조건 집합이 없습니다. 대신 이전 장(\@ref(clust-methods))에서 보여준 것처럼 비지도 클러스터링 접근 방식을 사용하여 세포 그룹을 식별할 수 있습니다. 그룹이 식별되면 그룹 간의 분산 차이를 비교하거나(SC3에서 구현된 Kruskal-Wallis 테스트와 같이) 클러스터 간의 유전자 발현을 쌍으로 비교하여 차등적으로 발현되는 유전자를 찾을 수 있습니다. 다음 장에서는 주로 쌍별 비교를 위해 개발된 도구를 고려할 것입니다.
 
-### Differences in Distribution
+### 분포의 차이
 
-Unlike bulk RNA-seq, we generally have a large number of samples (i.e. cells) for each group we are comparing in single-cell experiments. Thus we can take advantage of the whole distribution of expression values in each group to identify differences between groups rather than only comparing estimates of mean-expression as is standard for bulk RNASeq.
+대량 RNA-seq와 달리 단일 세포 실험에서는 비교하는 각 그룹에 대해 일반적으로 많은 수의 샘플(즉, 세포)이 있습니다. 따라서 대량 RNASeq의 표준인 평균 발현 추정치만 비교하는 대신 각 그룹의 전체 발현 값 분포를 활용하여 그룹 간의 차이를 식별할 수 있습니다.
 
-There are two main approaches to comparing distributions. Firstly, we can use existing statistical models/distributions and fit the same type of model to the expression in each group then test for differences in the parameters for each model, or test whether the model fits better if a particular paramter is allowed to be different according to group. For instance in Chapter \@ref(dealing-with-confounders) we used `edgeR` to test whether allowing mean expression to be different in different batches significantly improved the fit of a negative binomial model of the data.
+분포를 비교하는 두 가지 주요 접근 방식이 있습니다. 첫째, 기존 통계 모델/분포를 사용하고 각 그룹의 발현에 동일한 유형의 모델을 피팅한 다음 각 모델의 매개변수 차이를 테스트하거나 특정 매개변수가 그룹에 따라 다를 수 있는 경우 모델이 더 잘 맞는지 테스트할 수 있습니다. 예를 들어, 장 \@ref(dealing-with-confounders)에서는 `edgeR`을 사용하여 다른 배치에서 평균 발현이 다를 수 있도록 허용하는 것이 데이터의 음의 이항 모델의 적합도를 크게 향상시키는지 테스트했습니다.
 
-Alternatively, we can use a non-parametric test which does not assume that expression values follow any particular distribution, e.g. the [Kolmogorov-Smirnov test (KS-test)](https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test). Non-parametric tests generally convert observed expression values to ranks and test whether the distribution of ranks for one group are signficantly different from the distribution of ranks for the other group. However, some non-parametric methods fail in the presence of a large number of tied values, such as the case for dropouts (zeros) in single-cell RNA-seq expression data. Moreover, if the conditions for a parametric test hold, then it will typically be more powerful than a non-parametric test.
+또는 발현 값이 특정 분포를 따른다고 가정하지 않는 비모수적 테스트(예: [Kolmogorov-Smirnov 테스트(KS-테스트)](https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test))를 사용할 수 있습니다. 비모수적 테스트는 일반적으로 관찰된 발현 값을 순위로 변환하고 한 그룹의 순위 분포가 다른 그룹의 순위 분포와 크게 다른지 테스트합니다. 그러나 일부 비모수적 방법은 단일 세포 RNA-seq 발현 데이터의 드롭아웃(0)과 같이 많은 수의 동점 값이 있는 경우 실패합니다. 또한 모수적 테스트의 조건이 충족되면 일반적으로 비모수적 테스트보다 더 강력합니다.
 
-### Models of single-cell RNA-seq data
+### 단일 세포 RNA-seq 데이터 모델
 
-The most common model of scRNA-seq data is the negative binomial model:
+scRNA-seq 데이터의 가장 일반적인 모델은 음의 이항 모델입니다.
 
-```{r de-intro1, fig.cap="Negative Binomial distribution of read counts for a single gene across 1000 cells"}
+```{r de-intro1, fig.cap="1000개 세포에 대한 단일 유전자의 리드 카운트의 음의 이항 분포"}
 set.seed(1)
 hist(
     rnbinom(
@@ -40,21 +39,21 @@ hist(
         mu = 10, 
         size = 100), 
     col = "grey50", 
-    xlab = "Read Counts", 
-    main = "Negative Binomial"
+    xlab = "리드 카운트",
+    main = "음의 이항"
 )
 ```
-Mean:
+평균:
 $\mu = mu$
 
-Variance:
+분산:
 $\sigma^2 = mu + mu^2/size$
 
-It is parameterized by the mean expression (mu) and the dispersion (size), which is inversely related to the variance. The negative binomial model fits bulk RNA-seq data very well and it is used for most statistical methods designed for such data. In addition, it has been show to fit the distribution of molecule counts obtained from data tagged by unique molecular identifiers (UMIs) quite well ([Grun et al. 2014](http://www.nature.com/nmeth/journal/v11/n6/full/nmeth.2930.html), [Islam et al. 2011](http://genome.cshlp.org/content/21/7/1160)).
+평균 발현(mu)과 분산에 반비례하는 분산(size)으로 매개변수화됩니다. 음의 이항 모델은 대량 RNA-seq 데이터에 매우 잘 맞으며 이러한 데이터를 위해 설계된 대부분의 통계적 방법에 사용됩니다. 또한 고유 분자 식별자(UMI)로 태그가 지정된 데이터에서 얻은 분자 카운트 분포에 매우 잘 맞는 것으로 나타났습니다([Grun et al. 2014](http://www.nature.com/nmeth/journal/v11/n6/full/nmeth.2930.html), [Islam et al. 2011](http://genome.cshlp.org/content/21/7/1160)).
 
-However, a raw negative binomial model does not fit full-length transcript data as well due to the high dropout rates relative to the non-zero read counts. For this type of data a variety of zero-inflated negative binomial models have been proposed (e.g. [MAST](https://bioconductor.org/packages/release/bioc/html/MAST.html), [SCDE](https://bioconductor.org/packages/release/bioc/html/scde.html)).
+그러나 원시 음의 이항 모델은 0이 아닌 리드 카운트에 비해 높은 드롭아웃 비율로 인해 전체 길이 전사체 데이터에 잘 맞지 않습니다. 이러한 유형의 데이터에 대해 다양한 0-과잉 음의 이항 모델이 제안되었습니다(예: [MAST](https://bioconductor.org/packages/release/bioc/html/MAST.html), [SCDE](https://bioconductor.org/packages/release/bioc/html/scde.html)).
 
-```{r de-intro2, fig.cap="Zero-inflated Negative Binomial distribution"}
+```{r de-intro2, fig.cap="0-과잉 음의 이항 분포"}
 d <- 0.5;
 counts <- rnbinom(
     1000, 
@@ -65,21 +64,21 @@ counts[runif(1000) < d] <- 0
 hist(
     counts, 
     col = "grey50", 
-    xlab = "Read Counts", 
-    main = "Zero-inflated NB"
+    xlab = "리드 카운트",
+    main = "0-과잉 NB"
 )
 ```
-Mean:
+평균:
 $\mu = mu \cdot (1 - d)$
 
-Variance:
+분산:
 $\sigma^2 = \mu \cdot (1-d) \cdot (1 + d \cdot \mu + \mu / size)$
 
-These models introduce a new parameter $d$, for the dropout rate, to the negative binomial model. As we saw in Chapter 19, the dropout rate of a gene is strongly correlated with the mean expression of the gene. Different zero-inflated negative binomial models use different relationships between mu and d and some may fit $\mu$ and $d$ to the expression of each gene independently.
+이러한 모델은 드롭아웃 비율에 대한 새로운 매개변수 $d$를 음의 이항 모델에 도입합니다. 19장에서 보았듯이 유전자의 드롭아웃 비율은 유전자의 평균 발현과 강하게 상관됩니다. 다른 0-과잉 음의 이항 모델은 mu와 d 간의 다른 관계를 사용하며 일부는 각 유전자의 발현에 대해 $\mu$와 $d$를 독립적으로 피팅할 수 있습니다.
 
-Finally, several methods use a Poisson-Beta distribution which is based on a mechanistic model of transcriptional bursting. There is strong experimental support for this model ([Kim and Marioni, 2013](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2013-14-1-r7)) and it provides a good fit to scRNA-seq data but it is less easy to use than the negative-binomial models and much less existing methods upon which to build than the negative binomial model.
+마지막으로, 여러 방법은 전사적 버스팅의 기계론적 모델을 기반으로 하는 포아송-베타 분포를 사용합니다. 이 모델에 대한 강력한 실험적 지원이 있으며([Kim and Marioni, 2013](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2013-14-1-r7)) scRNA-seq 데이터에 잘 맞지만 음의 이항 모델보다 사용하기가 덜 쉽고 음의 이항 모델보다 구축할 기존 방법이 훨씬 적습니다.
 
-```{r de-intro3, pois-beta-plot, fit.cap="Poisson-Beta distribution"}
+```{r de-intro3, pois-beta-plot, fit.cap="포아송-베타 분포"}
 a <- 0.1
 b <- 0.1
 g <- 100
@@ -88,23 +87,23 @@ counts <- sapply(g*lambdas, function(l) {rpois(1, lambda = l)})
 hist(
     counts, 
     col = "grey50", 
-    xlab = "Read Counts", 
-    main = "Poisson-Beta"
+    xlab = "리드 카운트",
+    main = "포아송-베타"
 )
 ```
-Mean:
+평균:
 $\mu = g \cdot a / (a + b)$
 
-Variance:
+분산:
 $\sigma^2 = g^2 \cdot a \cdot b/((a + b + 1) \cdot (a + b)^2)$
 
-This model uses three parameters: $a$ the rate of activation of transcription; $b$ the rate of inhibition of transcription; and $g$ the rate of transcript production while transcription is active at the locus. Differential expression methods may test each of the parameters for differences across groups or only one (often $g$).
+이 모델은 전사 활성화율 $a$, 전사 억제율 $b$, 유전자좌에서 전사가 활성 상태일 때의 전사체 생산율 $g$라는 세 가지 매개변수를 사용합니다. 차등 발현 방법은 각 매개변수를 그룹 간의 차이에 대해 테스트하거나 하나만(종종 $g$) 테스트할 수 있습니다.
 
-All of these models may be further expanded to explicitly account for other sources of gene expression differences such as batch-effect or library depth depending on the particular DE algorithm.
+이러한 모든 모델은 특정 DE 알고리즘에 따라 배치 효과 또는 라이브러리 깊이와 같은 다른 유전자 발현 차이의 원인을 명시적으로 설명하기 위해 추가로 확장될 수 있습니다.
 
-__Exercise__: Vary the parameters of each distribution to explore how they affect the distribution of gene expression. How similar are the Poisson-Beta and Negative Binomial models?
+__연습__: 각 분포의 매개변수를 변경하여 유전자 발현 분포에 미치는 영향을 탐색합니다. 포아송-베타 모델과 음의 이항 모델은 얼마나 유사합니까?
 
-## DE in a Real Dataset
+## 실제 데이터 세트의 DE
 
 ```{r de-real1, echo=TRUE, message=FALSE, warning=FALSE}
 library(scRNA.seq.funcs)
@@ -115,12 +114,10 @@ library(ROCR)
 set.seed(1)
 ```
 
-### Introduction
+### 소개
 
-To test different single-cell differential expression methods we will be using the Blischak dataset from Chapters 7-17.
-For this experiment bulk RNA-seq data for each cell-line was generated in addition to single-cell data. We will use the
-differentially expressed genes identified using standard methods on the respective bulk data as the ground truth for evaluating the
-accuracy of each single-cell method. To save time we have pre-computed these for you. You can run the commands below to load these data.
+다른 단일 세포 차등 발현 방법을 테스트하기 위해 7-17장의 Blischak 데이터 세트를 사용할 것입니다.
+이 실험에서는 단일 세포 데이터 외에 각 세포주에 대한 대량 RNA-seq 데이터가 생성되었습니다. 우리는 각 단일 세포 방법의 정확성을 평가하기 위한 근거로 각 대량 데이터에 대한 표준 방법을 사용하여 식별된 차등적으로 발현되는 유전자를 사용할 것입니다. 시간을 절약하기 위해 이것을 미리 계산했습니다. 아래 명령을 실행하여 이 데이터를 로드할 수 있습니다.
 
 ```{r de-real2}
 DE <- read.table("data/tung/TPs.txt")
@@ -131,7 +128,7 @@ GroundTruth <- list(
 )
 ```
 
-This ground truth has been produce for the comparison of individual NA19101 to NA19239. Now load the respective single-cell data:
+이 근거는 개인 NA19101과 NA19239의 비교를 위해 생성되었습니다. 이제 각 단일 세포 데이터를 로드합니다.
 
 ```{r de-real3}
 molecules <- read.table("data/tung/molecules.txt", sep = "\t")
@@ -140,26 +137,26 @@ keep <- anno[,1] == "NA19101" | anno[,1] == "NA19239"
 data <- molecules[,keep]
 group <- anno[keep,1]
 batch <- anno[keep,4]
-# remove genes that aren't expressed in at least 6 cells
+# 최소 6개 세포에서 발현되지 않는 유전자 제거
 gkeep <- rowSums(data > 0) > 5;
 counts <- data[gkeep,]
-# Library size normalization
+# 라이브러리 크기 정규화
 lib_size = colSums(counts)
 norm <- t(t(counts)/lib_size * median(lib_size)) 
-# Variant of CPM for datasets with library sizes of fewer than 1 mil molecules
+# 라이브러리 크기가 백만 분자 미만인 데이터 세트에 대한 CPM 변형
 ```
 
-Now we will compare various single-cell DE methods. Note that we will only be running methods which are available as R-packages and run relatively quickly.
+이제 다양한 단일 세포 DE 방법을 비교할 것입니다. R 패키지로 사용할 수 있고 비교적 빠르게 실행되는 방법만 실행할 것입니다.
 
-### Kolmogorov-Smirnov Test
+### 콜모고로프-스미르노프 검정
 
-The types of test that are easiest to work with are non-parametric ones. The most commonly used non-parametric test is the [Kolmogorov-Smirnov test](https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test) (KS-test) and we can use it to compare the distributions for each gene in the two individuals. The KS-test quantifies the distance between the empirical cummulative distributions of the expression of each gene in each of the two populations. It is sensitive to changes in mean experession and changes in variability. However it assumes data is continuous and may perform poorly when data contains a large number of identical values (eg. zeros). Another issue with the KS-test is that it can be very sensitive for large sample sizes and thus it may end up as significant even though the magnitude of the difference is very small.
+작업하기 가장 쉬운 유형의 테스트는 비모수적 테스트입니다. 가장 일반적으로 사용되는 비모수적 테스트는 [콜모고로프-스미르노프 검정](https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test)(KS-검정)이며, 두 개인의 각 유전자에 대한 분포를 비교하는 데 사용할 수 있습니다. KS-검정은 두 모집단 각각의 각 유전자 발현의 경험적 누적 분포 간의 거리를 정량화합니다. 평균 발현의 변화와 변동성의 변화에 민감합니다. 그러나 데이터가 연속적이라고 가정하며 데이터에 많은 수의 동일한 값(예: 0)이 포함된 경우 성능이 저하될 수 있습니다. KS-검정의 또 다른 문제는 큰 표본 크기에 대해 매우 민감할 수 있으므로 차이의 크기가 매우 작더라도 유의하게 나올 수 있다는 것입니다.
 
-```{r de-real4, echo=FALSE, out.width = '60%', fig.cap="Illustration of the two-sample Kolmogorov–Smirnov statistic. Red and blue lines each correspond to an empirical distribution function, and the black arrow is the two-sample KS statistic. (taken from [here](https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test))"}
+```{r de-real4, echo=FALSE, out.width = '60%', fig.cap="두 표본 콜모고로프-스미르노프 통계량의 그림. 빨간색과 파란색 선은 각각 경험적 분포 함수에 해당하며 검은색 화살표는 두 표본 KS 통계량입니다. ([여기](https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test)에서 가져옴)"}
 knitr::include_graphics("figures/KS2_Example.png")
 ```
 
-Now run the test:
+이제 테스트를 실행합니다.
 
 ```{r de-real5, message=FALSE, warning=FALSE}
 pVals <- apply(
@@ -170,25 +167,25 @@ pVals <- apply(
         )$p.value
     }
 )
-# multiple testing correction
+# 다중 검정 보정
 pVals <- p.adjust(pVals, method = "fdr")
 ```
 
-This code "applies" the function to each row (specified by 1) of the expression matrix, data. In the function we are returning just the p.value from the ks.test output. We can now consider how many of the ground truth positive and negative DE genes are detected by the KS-test:
+이 코드는 발현 행렬, 데이터의 각 행(1로 지정)에 함수를 "적용"합니다. 함수에서는 ks.test 출력에서 p.value만 반환합니다. 이제 KS-검정으로 근거 양성 및 음성 DE 유전자가 얼마나 많이 검출되었는지 고려할 수 있습니다.
 
-#### Evaluating Accuracy
+#### 정확도 평가
 
 ```{r de-real6}
 sigDE <- names(pVals)[pVals < 0.05]
 length(sigDE) 
-# Number of KS-DE genes
+# KS-DE 유전자 수
 sum(GroundTruth$DE %in% sigDE) 
-# Number of KS-DE genes that are true DE genes
+# 실제 DE 유전자인 KS-DE 유전자 수
 sum(GroundTruth$notDE %in% sigDE)
-# Number of KS-DE genes that are truly not-DE
+# 실제로는 DE가 아닌 KS-DE 유전자 수
 ```
 
-As you can see many more of our ground truth negative genes were identified as DE by the KS-test (false positives) than ground truth positive genes (true positives), however this may be due to the larger number of notDE genes thus we typically normalize these counts as the True positive rate (TPR), TP/(TP + FN), and False positive rate (FPR), FP/(FP+TP).
+보시다시피 KS-검정(위양성)에 의해 DE로 식별된 근거 음성 유전자가 근거 양성 유전자(진양성)보다 훨씬 많지만, 이는 notDE 유전자의 수가 더 많기 때문일 수 있으므로 일반적으로 이러한 카운트를 진양성률(TPR), TP/(TP + FN) 및 위양성률(FPR), FP/(FP+TP)로 정규화합니다.
 
 ```{r de-real7}
 tp <- sum(GroundTruth$DE %in% sigDE)
@@ -199,12 +196,12 @@ tpr <- tp/(tp + fn)
 fpr <- fp/(fp + tn)
 cat(c(tpr, fpr))
 ```
-Now we can see the TPR is much higher than the FPR indicating the KS test is identifying DE genes.
+이제 TPR이 FPR보다 훨씬 높다는 것을 알 수 있으며, 이는 KS 검정이 DE 유전자를 식별하고 있음을 나타냅니다.
 
-So far we've only evaluated the performance at a single significance threshold. Often it is informative to vary the threshold and evaluate performance across a range of values. This is then plotted as a receiver-operating-characteristic curve (ROC) and a general accuracy statistic can be calculated as the area under this curve (AUC). We will use the ROCR package to facilitate this plotting.
+지금까지 단일 유의성 임계값에서만 성능을 평가했습니다. 종종 임계값을 변경하고 다양한 값에 대한 성능을 평가하는 것이 유익합니다. 그런 다음 이것은 수신기-작동 특성 곡선(ROC)으로 플로팅되고 일반적인 정확도 통계는 이 곡선 아래의 면적(AUC)으로 계산할 수 있습니다. 이 플로팅을 용이하게 하기 위해 ROCR 패키지를 사용할 것입니다.
 
-```{r de-real8, fig.cap="ROC curve for KS-test."}
-# Only consider genes for which we know the ground truth
+```{r de-real8, fig.cap="KS-검정에 대한 ROC 곡선."}
+# 우리가 근거를 아는 유전자만 고려
 pVals <- pVals[names(pVals) %in% GroundTruth$DE | 
                names(pVals) %in% GroundTruth$notDE] 
 truth <- rep(1, times = length(pVals));
@@ -216,7 +213,7 @@ aucObj <- ROCR::performance(pred, "auc")
 aucObj@y.values[[1]] # AUC
 ```
 
-Finally to facilitate the comparisons of other DE methods let's put this code into a function so we don't need to repeat it:
+마지막으로 다른 DE 방법의 비교를 용이하게 하기 위해 이 코드를 함수에 넣어 반복할 필요가 없도록 하겠습니다.
 
 ```{r de-real9}
 DE_Quality_AUC <- function(pVals) {
@@ -232,11 +229,11 @@ DE_Quality_AUC <- function(pVals) {
 }
 ```
 
-### Wilcox/Mann-Whitney-U Test
+### 윌콕슨/만-휘트니-U 검정
 
-The Wilcox-rank-sum test is another non-parametric test, but tests specifically if values in one group are greater/less than the values in the other group. Thus it is often considered a test for difference in median expression between two groups; whereas the KS-test is sensitive to any change in distribution of expression values.
+윌콕슨 순위 합 검정은 또 다른 비모수적 검정이지만, 한 그룹의 값이 다른 그룹의 값보다 큰지/작은지를 구체적으로 검정합니다. 따라서 종종 두 그룹 간의 평균 발현 차이에 대한 검정으로 간주됩니다. 반면 KS-검정은 발현 값의 분포에 대한 모든 변화에 민감합니다.
 
-```{r de-real10, fig.cap="ROC curve for Wilcox test.", message=FALSE, warning=FALSE}
+```{r de-real10, fig.cap="윌콕슨 검정에 대한 ROC 곡선.", message=FALSE, warning=FALSE}
 pVals <- apply(
     norm, 1, function(x) {
         wilcox.test(
@@ -245,16 +242,16 @@ pVals <- apply(
         )$p.value
     }
 )
-# multiple testing correction
+# 다중 검정 보정
 pVals <- p.adjust(pVals, method = "fdr")
 DE_Quality_AUC(pVals)
 ```
 
 ### edgeR
 
-We've already used edgeR for differential expression in Chapter \@ref(dealing-with-confounders). edgeR is based on a negative binomial model of gene expression and uses a generalized linear model (GLM) framework, the enables us to include other factors such as batch to the model.
+우리는 이미 \@ref(dealing-with-confounders) 장에서 차등 발현에 edgeR을 사용했습니다. edgeR은 유전자 발현의 음의 이항 모델을 기반으로 하며 일반화 선형 모델(GLM) 프레임워크를 사용하여 배치와 같은 다른 요인을 모델에 포함할 수 있습니다.
 
-```{r de-real11, fig.cap="ROC curve for edgeR.", message=FALSE}
+```{r de-real11, fig.cap="edgeR에 대한 ROC 곡선.", message=FALSE}
 dge <- DGEList(
     counts = counts, 
     norm.factors = rep(1, length(counts[1,])), 
@@ -275,9 +272,9 @@ DE_Quality_AUC(pVals)
 <!-- 
 ### Monocle
 
-[Monocle](https://bioconductor.org/packages/release/bioc/html/monocle.html) can use several different models for DE. For count data it recommends the Negative Binomial model (negbinomial.size). For normalized data it recommends log-transforming it then using a normal distribution (gaussianff). Similar to edgeR this method uses a GLM framework so in theory can account for batches, however in practice the model fails for this dataset if batches are included.
+[Monocle](https://bioconductor.org/packages/release/bioc/html/monocle.html)은 DE에 대해 여러 다른 모델을 사용할 수 있습니다. 카운트 데이터의 경우 음의 이항 모델(negbinomial.size)을 권장합니다. 정규화된 데이터의 경우 로그 변환한 다음 정규 분포(gaussianff)를 사용하는 것을 권장합니다. edgeR과 유사하게 이 방법은 GLM 프레임워크를 사용하므로 이론적으로 배치를 설명할 수 있지만 실제로는 이 데이터 세트에 대해 배치를 포함하면 모델이 실패합니다.
 
-```{r de-real12, fig.cap="ROC curve for Monocle.", message=FALSE, warning=FALSE}
+```{r de-real12, fig.cap="Monocle에 대한 ROC 곡선.", message=FALSE, warning=FALSE}
 #pd <- data.frame(group = group, batch = batch)
 #rownames(pd) <- colnames(counts)
 #pd <- new("AnnotatedDataFrame", data = pd)
@@ -297,10 +294,10 @@ DE_Quality_AUC(pVals)
 #DE_Quality_AUC(pVals)
 ```
 
-__Exercise__: Compare the results using the negative binomial model on counts and those from using the normal/gaussian model (`gaussianff()`) on log-transformed normalized counts.
+__연습__: 카운트에 대한 음의 이항 모델을 사용한 결과와 로그 변환된 정규화된 카운트에 대한 정규/가우시안 모델(`gaussianff()`)을 사용한 결과를 비교합니다.
 
-<details><summary>Answer</summary>
-```{r de-real13, fig.cap="ROC curve for Monocle-gaussian.", message=FALSE, echo=FALSE, warning=FALSE}
+<details><summary>답</summary>
+```{r de-real13, fig.cap="Monocle-gaussian에 대한 ROC 곡선.", message=FALSE, echo=FALSE, warning=FALSE}
 #pd <- data.frame(group = group, batch = batch)
 #rownames(pd) <- colnames(norm)
 #pd <- new("AnnotatedDataFrame", data = pd)
@@ -324,9 +321,9 @@ __Exercise__: Compare the results using the negative binomial model on counts an
 
 ### MAST
 
-[MAST](https://bioconductor.org/packages/release/bioc/html/MAST.html) is based on a zero-inflated negative binomial model. It tests for differential expression using a hurdle model to combine tests of discrete (0 vs not zero) and continuous (non-zero values) aspects of gene expression. Again this uses a linear modelling framework to enable complex models to be considered.
+[MAST](https://bioconductor.org/packages/release/bioc/html/MAST.html)는 0-과잉 음의 이항 모델을 기반으로 합니다. 허들 모델을 사용하여 유전자 발현의 이산적(0 대 0이 아님) 및 연속적(0이 아닌 값) 측면의 검정을 결합하여 차등 발현을 검정합니다. 다시 말하지만, 이는 복잡한 모델을 고려할 수 있도록 선형 모델링 프레임워크를 사용합니다.
 
-```{r de-real14, fig.cap="ROC curve for MAST.", message=FALSE}
+```{r de-real14, fig.cap="MAST에 대한 ROC 곡선.", message=FALSE}
 log_counts <- log(counts + 1) / log(2)
 fData <- data.frame(names = rownames(log_counts))
 rownames(fData) <- rownames(log_counts);
@@ -337,26 +334,26 @@ obj <- FromMatrix(as.matrix(log_counts), cData, fData)
 colData(obj)$cngeneson <- scale(colSums(assay(obj) > 0))
 cond <- factor(colData(obj)$cond)
 
-# Model expression as function of condition & number of detected genes
+# 조건 및 검출된 유전자 수의 함수로 발현 모델링
 zlmCond <- zlm(~ cond + cngeneson, obj) 
 
 summaryCond <- summary(zlmCond, doLRT = "condNA19239")
 summaryDt <- summaryCond$datatable
 
 summaryDt <- as.data.frame(summaryDt)
-pVals <- unlist(summaryDt[summaryDt$component == "H",4]) # H = hurdle model
+pVals <- unlist(summaryDt[summaryDt$component == "H",4]) # H = 허들 모델
 names(pVals) <- unlist(summaryDt[summaryDt$component == "H",1])
 pVals <- p.adjust(pVals, method = "fdr")
 DE_Quality_AUC(pVals)
 ```
 
-### Slow Methods (>1h to run) 
+### 느린 방법(실행 시간 > 1시간)
 
-These methods are too slow to run today but we encourage you to try them out on your own:
+이러한 방법은 오늘 실행하기에는 너무 느리지만 직접 시도해 보는 것이 좋습니다.
 
 ### BPSC
 
-[BPSC](https://academic.oup.com/bioinformatics/article/32/14/2128/2288270/Beta-Poisson-model-for-single-cell-RNA-seq-data) uses the Poisson-Beta model of single-cell gene expression, which we discussed in the previous chapter, and combines it with generalized linear models which we've already encountered when using edgeR. BPSC performs comparisons of one or more groups to a reference group ("control") and can include other factors such as batches in the model.
+[BPSC](https://academic.oup.com/bioinformatics/article/32/14/2128/2288270/Beta-Poisson-model-for-single-cell-RNA-seq-data)는 이전 장에서 논의한 단일 세포 유전자 발현의 포아송-베타 모델을 사용하며, 이를 edgeR을 사용할 때 이미 접했던 일반화 선형 모델과 결합합니다. BPSC는 하나 이상의 그룹을 참조 그룹("대조군")과 비교하고 모델에 배치와 같은 다른 요인을 포함할 수 있습니다.
 
 ```{r de-real15, message=FALSE, eval=FALSE}
 library(BPSC)
@@ -365,7 +362,7 @@ bpsc_group = group[batch=="NA19101.r1" | batch=="NA19239.r1"]
 
 control_cells <- which(bpsc_group == "NA19101")
 design <- model.matrix(~bpsc_group)
-coef=2 # group label
+coef=2 # 그룹 레이블
 res=BPglm(data=bpsc_data, controlIds=control_cells, design=design, coef=coef, 
                 estIntPar=FALSE, useParallel = FALSE)
 pVals = res$PVAL
@@ -375,7 +372,7 @@ DE_Quality_AUC(pVals)
 
 ### SCDE
 
-[SCDE](http://hms-dbmi.github.io/scde/) is the first single-cell specific DE method. It fits a zero-inflated negative binomial model to expression data using Bayesian statistics. The usage below tests for differences in mean expression of individual genes across groups but recent versions include methods to test for differences in mean expression or dispersion of groups of genes, usually representing a pathway.
+[SCDE](http://hms-dbmi.github.io/scde/)는 최초의 단일 세포 특이적 DE 방법입니다. 베이지안 통계를 사용하여 0-과잉 음의 이항 모델을 발현 데이터에 피팅합니다. 아래 사용법은 그룹 간의 개별 유전자의 평균 발현 차이를 테스트하지만 최근 버전에는 일반적으로 경로를 나타내는 유전자 그룹의 평균 발현 또는 분산 차이를 테스트하는 방법이 포함됩니다.
 
 ```{r de-real16, eval=FALSE}
 library(scde)
@@ -414,16 +411,15 @@ resSCDE <- scde::scde.expression.difference(
     n.cores = 1,
     verbose = 0
 )
-# Convert Z-scores into 2-tailed p-values
+# Z-점수를 양측 p-값으로 변환
 pVals <- pnorm(abs(resSCDE$cZ), lower.tail = FALSE) * 2
 DE_Quality_AUC(pVals)
 ```
 
 ### sessionInfo()
 
-<details><summary>View session info</summary>
+<details><summary>세션 정보 보기</summary>
 ```{r echo=FALSE}
 sessionInfo()
 ```
 </details>
-

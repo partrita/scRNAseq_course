@@ -2,102 +2,102 @@
 output: html_document
 ---
 
-# Biological Analysis
+# 생물학적 분석
 
-## Clustering Introduction
+## 클러스터링 소개
 
 ```{r clust-intro0, echo=FALSE}
 library(knitr)
 opts_chunk$set(cache = TRUE, fig.align = "center", echo=FALSE)
 ```
 
-Once we have normalized the data and removed confounders we can carry out analyses that are relevant to the biological questions at hand. The exact nature of the analysis depends on the dataset. Nevertheless, there are a few aspects that are useful in a wide range of contexts and we will be discussing some of them in the next few chapters. We will start with the clustering of scRNA-seq data.
+데이터를 정규화하고 교란 요인을 제거한 후에는 당면한 생물학적 질문과 관련된 분석을 수행할 수 있습니다. 분석의 정확한 성격은 데이터 세트에 따라 다릅니다. 그럼에도 불구하고 광범위한 맥락에서 유용한 몇 가지 측면이 있으며 다음 몇 장에서 그 중 일부를 논의할 것입니다. scRNA-seq 데이터의 클러스터링부터 시작하겠습니다.
 
-### Introduction
+### 소개
 
-One of the most promising applications of scRNA-seq is _de novo_ discovery and annotation of cell-types based on transcription profiles. Computationally, this is a hard problem as it amounts to __unsupervised clustering__. That is, we need to identify groups of cells based on the similarities of the transcriptomes without any prior knowledge of the labels. Moreover, in most situations we do not even know the number of clusters _a priori_. The problem is made even more challenging due to the high level of noise (both technical and biological) and the large number of dimensions (i.e. genes). 
+scRNA-seq의 가장 유망한 응용 분야 중 하나는 전사 프로필을 기반으로 한 세포 유형의 _de novo_ 발견 및 주석입니다. 계산적으로 이것은 __비지도 클러스터링__에 해당하므로 어려운 문제입니다. 즉, 레이블에 대한 사전 지식 없이 전사체의 유사성을 기반으로 세포 그룹을 식별해야 합니다. 또한 대부분의 경우 _사전에_ 클러스터 수를 알지 못합니다. 높은 수준의 노이즈(기술적 및 생물학적 모두)와 많은 수의 차원(즉, 유전자)으로 인해 문제는 더욱 어려워집니다.
 
-### Dimensionality reductions
+### 차원 축소
 
-When working with large datasets, it can often be beneficial to apply some sort of dimensionality reduction method. By projecting the data onto a lower-dimensional sub-space, one is often able to significantly reduce the amount of noise. An additional benefit is that it is typically much easier to visualize the data in a 2 or 3-dimensional subspace. We have already discussed PCA (chapter \@ref(pca-plot)) and t-SNE (chapter \@ref(tsne-map)).
+대규모 데이터 세트로 작업할 때 일종의 차원 축소 방법을 적용하는 것이 종종 유익할 수 있습니다. 데이터를 저차원 하위 공간에 투영함으로써 종종 노이즈의 양을 크게 줄일 수 있습니다. 추가적인 이점은 일반적으로 2차원 또는 3차원 하위 공간에서 데이터를 시각화하는 것이 훨씬 쉽다는 것입니다. 우리는 이미 PCA(장 \@ref(pca-plot))와 t-SNE(장 \@ref(tsne-map))에 대해 논의했습니다.
 
-### Clustering methods
+### 클러스터링 방법
 
-__Unsupervised clustering__ is useful in many different applications and it has been widely studied in machine learning. Some of the most popular approaches are __hierarchical clustering__, __k-means clustering__ and __graph-based clustering__.
+__비지도 클러스터링__은 다양한 응용 분야에서 유용하며 기계 학습에서 널리 연구되었습니다. 가장 인기 있는 접근 방식 중 일부는 __계층적 클러스터링__, __k-평균 클러스터링__ 및 __그래프 기반 클러스터링__입니다.
 
-#### Hierarchical clustering
+#### 계층적 클러스터링
 
-In [hierarchical clustering](https://en.wikipedia.org/wiki/Hierarchical_clustering), one can use either a bottom-up or a top-down approach. In the former case, each cell is initially assigned to its own cluster and pairs of clusters are subsequently merged to create a hieararchy:
+[계층적 클러스터링](https://en.wikipedia.org/wiki/Hierarchical_clustering)에서는 상향식 또는 하향식 접근 방식을 사용할 수 있습니다. 전자의 경우 각 셀은 처음에 자체 클러스터에 할당되고 클러스터 쌍은 이후에 병합되어 계층 구조를 만듭니다.
 
-```{r clust-intro1, fig.align="center", out.width = '80%', fig.cap="Raw data"}
+```{r clust-intro1, fig.align="center", out.width = '80%', fig.cap="원시 데이터"}
 knitr::include_graphics("figures/hierarchical_clustering1.png")
 ```
 
-```{r clust-intro2, fig.align="center", out.width = '80%', fig.cap="The hierarchical clustering dendrogram"}
+```{r clust-intro2, fig.align="center", out.width = '80%', fig.cap="계층적 클러스터링 덴드로그램"}
 knitr::include_graphics("figures/hierarchical_clustering2.png")
 ```
 
-With a top-down strategy, one instead starts with all observations in one cluster and then recursively split each cluster to form a hierarchy. One of the advantages of this strategy is that the method is deterministic.
+하향식 전략을 사용하면 대신 모든 관측치를 하나의 클러스터에 넣고 재귀적으로 각 클러스터를 분할하여 계층 구조를 형성합니다. 이 전략의 장점 중 하나는 방법이 결정적이라는 것입니다.
 
-#### k-means
+#### k-평균
 
-In [_k_-means clustering](https://en.wikipedia.org/wiki/K-means_clustering), the goal is to partition _N_ objects (cells) into _k_ different clusters. In an iterative manner, cluster centers are assigned and each cell is assigned to its nearest cluster:
+[_k_-평균 클러스터링](https://en.wikipedia.org/wiki/K-means_clustering)에서 목표는 _N_개의 객체(셀)를 _k_개의 다른 클러스터로 분할하는 것입니다. 반복적인 방식으로 클러스터 중심이 할당되고 각 셀은 가장 가까운 클러스터에 할당됩니다.
 
-```{r clust-intro3, out.width = '100%', fig.cap="Schematic representation of the k-means clustering"}
+```{r clust-intro3, out.width = '100%', fig.cap="k-평균 클러스터링의 개략도"}
 knitr::include_graphics("figures/k-means.png")
 ```
 
-Most methods for scRNA-seq analysis includes a _k_-means step at some point.
+scRNA-seq 분석을 위한 대부분의 방법에는 어떤 시점에서 _k_-평균 단계가 포함됩니다.
 
-#### Graph-based methods
+#### 그래프 기반 방법
 
-Over the last two decades there has been a lot of interest in analyzing networks in various domains. One goal is to identify group or modules of nodes in a network.
+지난 20년 동안 다양한 영역에서 네트워크를 분석하는 데 많은 관심이 있었습니다. 한 가지 목표는 네트워크에서 노드의 그룹 또는 모듈을 식별하는 것입니다.
 
-```{r clust-intro4, out.width = '100%', fig.cap="Schematic representation of the graph network"}
+```{r clust-intro4, out.width = '100%', fig.cap="그래프 네트워크의 개략도"}
 knitr::include_graphics("figures/graph_network.jpg")
 ```
 
-Some of these methods can be applied to scRNA-seq data by building a graph where each node represents a cell. Note that constructing the graph and assigning weights to the edges is not trivial. One advantage of graph-based methods is that some of them are very computationally efficient and can be applied to networks containing millions of nodes.
+이러한 방법 중 일부는 각 노드가 셀을 나타내는 그래프를 구축하여 scRNA-seq 데이터에 적용할 수 있습니다. 그래프를 구성하고 에지에 가중치를 할당하는 것은 간단하지 않다는 점에 유의하십시오. 그래프 기반 방법의 한 가지 장점은 일부 방법이 매우 계산적으로 효율적이며 수백만 개의 노드가 포함된 네트워크에 적용할 수 있다는 것입니다.
 
-### Challenges in clustering
+### 클러스터링의 과제
 
-  * What is the number of clusters _k_?
-  * What is a cell type?
-  * __Scalability__: in the last few years the number of cells in scRNA-seq experiments has grown by several orders of magnitude from ~$10^2$ to ~$10^6$
-  * Tools can be not user-friendly
+  * 클러스터 수 _k_는 얼마입니까?
+  * 세포 유형이란 무엇입니까?
+  * __확장성__: 지난 몇 년 동안 scRNA-seq 실험의 세포 수는 ~$10^2$에서 ~$10^6$까지 여러 자릿수 증가했습니다.
+  * 도구가 사용자 친화적이지 않을 수 있습니다.
 
-### Tools for scRNA-seq data
+### scRNA-seq 데이터용 도구
 
 #### [SINCERA](https://research.cchmc.org/pbge/sincera.html)
 
-* SINCERA [@Guo2015-ok] is based on hierarchical clustering
-* Data is converted to _z_-scores before clustering
-* Identify _k_ by finding the first singleton cluster in the hierarchy
+* SINCERA [@Guo2015-ok]는 계층적 클러스터링을 기반으로 합니다.
+* 데이터는 클러스터링 전에 _z_-점수로 변환됩니다.
+* 계층 구조에서 첫 번째 단일 클러스터를 찾아 _k_를 식별합니다.
 
 #### [SC3](http://bioconductor.org/packages/SC3/)
 
-```{r clust-intro5, out.width = '100%', fig.cap="SC3 pipeline"}
+```{r clust-intro5, out.width = '100%', fig.cap="SC3 파이프라인"}
 knitr::include_graphics("figures/sc3.png")
 ```
 
-* SC3 [@Kiselev2016-bq] is based on PCA and spectral dimensionality reductions
-* Utilises _k_-means
-* Additionally performs the consensus clustering
+* SC3 [@Kiselev2016-bq]는 PCA 및 스펙트럼 차원 축소를 기반으로 합니다.
+* _k_-평균을 활용합니다.
+* 추가로 컨센서스 클러스터링을 수행합니다.
 
-#### tSNE + k-means
+#### tSNE + k-평균
 
-* Based on __tSNE__ maps
-* Utilises _k_-means
+* __tSNE__ 맵을 기반으로 합니다.
+* _k_-평균을 활용합니다.
 
-#### Seurat clustering
+#### Seurat 클러스터링
 
-[`Seurat`](https://github.com/satijalab/seurat) clustering is based on a _community detection_ approach similar to `SNN-Cliq` and to one previously proposed for analyzing CyTOF data [@Levine2015-fk]. Since `Seurat` has become more like an all-in-one tool for scRNA-seq data analysis we dedicate a separate chapter to discuss it in more details (see below).
+[`Seurat`](https://github.com/satijalab/seurat) 클러스터링은 `SNN-Cliq` 및 이전에 CyTOF 데이터 분석을 위해 제안된 것과 유사한 _커뮤니티 감지_ 접근 방식을 기반으로 합니다[@Levine2015-fk]. `Seurat`가 scRNA-seq 데이터 분석을 위한 올인원 도구와 비슷해졌기 때문에 별도의 장을 할애하여 자세히 논의합니다(아래 참조).
 
-### Comparing clustering
+### 클러스터링 비교
 
-To compare two sets of clustering labels we can use [adjusted Rand index](https://en.wikipedia.org/wiki/Rand_index). The index is a measure of the similarity between two data clusterings. Values of the adjusted Rand index lie in $[0;1]$ interval, where $1$ means that two clusterings are identical and $0$ means the level of similarity expected by chance.
+두 개의 클러스터링 레이블 세트를 비교하기 위해 [조정된 랜드 지수](https://en.wikipedia.org/wiki/Rand_index)를 사용할 수 있습니다. 이 지수는 두 데이터 클러스터링 간의 유사성을 측정한 것입니다. 조정된 랜드 지수의 값은 $[0;1]$ 간격에 있으며, $1$은 두 클러스터링이 동일하다는 것을 의미하고 $0$은 우연히 예상되는 유사성 수준을 의미합니다.
 
-## Clustering example {#clust-methods}
+## 클러스터링 예제 {#clust-methods}
 
 ```{r clustering1, echo=TRUE, message=FALSE, warning=FALSE}
 library(pcaMethods)
@@ -109,159 +109,159 @@ library(mclust)
 set.seed(1234567)
 ```
 
-To illustrate clustering of scRNA-seq data, we consider the `Deng` dataset of cells from developing mouse embryo [@Deng2014-mx]. We have preprocessed the dataset and created a `SingleCellExperiment` object in advance. We have also annotated the cells with the cell types identified in the original publication (it is the `cell_type2` column in the `colData` slot).
+scRNA-seq 데이터의 클러스터링을 설명하기 위해, 우리는 개발 중인 마우스 배아의 세포의 `Deng` 데이터 세트를 고려합니다[@Deng2014-mx]. 우리는 데이터 세트를 전처리하고 사전에 `SingleCellExperiment` 객체를 만들었습니다. 또한 원래 간행물에서 식별된 세포 유형으로 세포에 주석을 달았습니다(`colData` 슬롯의 `cell_type2` 열).
 
-### Deng dataset
+### Deng 데이터 세트
 
-Let's load the data and look at it:
+데이터를 로드하고 살펴보겠습니다.
 
 ```{r clustering2, echo=TRUE}
 deng <- readRDS("data/deng/deng-reads.rds")
 ```
 
-Let's look at the cell type annotation:
+세포 유형 주석을 살펴보겠습니다.
 
 ```{r clustering3, echo=TRUE}
 table(colData(deng)$cell_type2)
 ```
 
-A simple PCA analysis already separates some strong cell types and provides some insights in the data structure:
+간단한 PCA 분석은 이미 일부 강력한 세포 유형을 분리하고 데이터 구조에 대한 일부 통찰력을 제공합니다.
 
 ```{r clustering4, echo=TRUE}
 deng <- runPCA(deng)
 plotPCA(deng, colour_by = "cell_type2")
 ```
 
-As you can see, the early cell types separate quite well, but the three blastocyst timepoints are more difficult to distinguish.
+보시다시피 초기 세포 유형은 매우 잘 분리되지만 세 가지 배반포 시점은 구별하기가 더 어렵습니다.
 
 ### SC3
 
-Let's run `SC3` clustering on the Deng data. The advantage of the `SC3` is that it can directly ingest a `SingleCellExperiment` object.
+Deng 데이터에 대해 `SC3` 클러스터링을 실행해 보겠습니다. `SC3`의 장점은 `SingleCellExperiment` 객체를 직접 수용할 수 있다는 것입니다.
 
-Now let's image we do not know the number of clusters _k_ (cell types). `SC3` can estimate a number of clusters for you:
+이제 클러스터 수 _k_(세포 유형)를 모른다고 상상해 보겠습니다. `SC3`는 클러스터 수를 추정할 수 있습니다.
 
 ```{r clustering5, echo=TRUE}
 deng <- sc3_estimate_k(deng)
 metadata(deng)$sc3$k_estimation
 ```
 
-Interestingly, the number of cell types predicted by `SC3` is smaller than in the original data annotation. However, if early, mid and late stages of different cell types are combined together, we will have exactly 6 cell types. We store the merged cell types in `cell_type1` column of the `colData` slot:
+흥미롭게도 `SC3`에서 예측한 세포 유형 수는 원래 데이터 주석보다 적습니다. 그러나 다른 세포 유형의 초기, 중기 및 후기 단계를 함께 결합하면 정확히 6개의 세포 유형이 됩니다. 병합된 세포 유형을 `colData` 슬롯의 `cell_type1` 열에 저장합니다.
 
 ```{r clustering6, echo=TRUE}
 plotPCA(deng, colour_by = "cell_type1")
 ```
 
-Now we are ready to run `SC3` (we also ask it to calculate biological properties of the clusters):
+이제 `SC3`를 실행할 준비가 되었습니다(클러스터의 생물학적 속성도 계산하도록 요청).
 
 ```{r clustering7, echo=TRUE}
 deng <- sc3(deng, ks = 10, biology = TRUE, n_cores = 1)
 ```
 
-`SC3` result consists of several different outputs (please look in [@Kiselev2016-bq] and [SC3 vignette](http://bioconductor.org/packages/release/bioc/vignettes/SC3/inst/doc/my-vignette.html) for more details). Here we show some of them:
+`SC3` 결과는 여러 다른 출력으로 구성됩니다(자세한 내용은 [@Kiselev2016-bq] 및 [SC3 비네트](http://bioconductor.org/packages/release/bioc/vignettes/SC3/inst/doc/my-vignette.html) 참조). 여기서는 그 중 일부를 보여줍니다.
 
-Consensus matrix:
+컨센서스 행렬:
 
 ```{r clustering8, fig.height=6}
 sc3_plot_consensus(deng, k = 10, show_pdata = "cell_type2")
 ```
 
-Silhouette plot:
+실루엣 플롯:
 
 ```{r clustering9, fig.height=9}
 sc3_plot_silhouette(deng, k = 10)
 ```
 
-Heatmap of the expression matrix:
+발현 행렬의 히트맵:
 
 ```{r clustering10, fig.height=6}
 sc3_plot_expression(deng, k = 10, show_pdata = "cell_type2")
 ```
 
-Identified marker genes:
+식별된 마커 유전자:
 
 ```{r clustering11, fig.height=11}
 sc3_plot_markers(deng, k = 10, show_pdata = "cell_type2")
 ```
 
-PCA plot with highlighted `SC3` clusters:
+`SC3` 클러스터가 강조 표시된 PCA 플롯:
 
 ```{r clustering12}
 plotPCA(deng, colour_by = "sc3_10_clusters")
 ```
 
-Compare the results of `SC3` clustering with the original publication cell type labels:
+`SC3` 클러스터링 결과를 원래 간행물 세포 유형 레이블과 비교합니다.
 
 ```{r clustering13}
 adjustedRandIndex(colData(deng)$cell_type2, colData(deng)$sc3_10_clusters)
 ```
 
-__Note__ `SC3` can also be run in an interactive `Shiny` session:
+__참고__ `SC3`는 대화형 `Shiny` 세션에서도 실행할 수 있습니다.
 
 ```{r clustering14, eval=FALSE}
-### LOADS BROWSER BUT COULDN'T ACCESS
+### 브라우저를 로드하지만 액세스할 수 없음
 sc3_interactive(deng)
 ```
 
-This command will open `SC3` in a web browser.
+이 명령은 웹 브라우저에서 `SC3`를 엽니다.
 
-__Note__ Due to direct calculation of distances `SC3` becomes very slow when the number of cells is $>5000$. For large datasets containing up to $10^5$ cells we recomment using `Seurat` (see chapter \@ref(clust-intro0)).
+__참고__ 직접 거리 계산으로 인해 세포 수가 5000개 이상이면 `SC3`가 매우 느려집니다. 최대 $10^5$개의 세포를 포함하는 대규모 데이터 세트의 경우 `Seurat`를 사용하는 것이 좋습니다(장 \@ref(clust-intro0) 참조).
 
-* __Exercise 1__: Run `SC3` for $k$ from 8 to 12 and explore different clustering solutions in your web browser.
+* __연습 1__: 8에서 12까지의 $k$에 대해 `SC3`를 실행하고 웹 브라우저에서 다른 클러스터링 솔루션을 탐색합니다.
 
-* __Exercise 2__: Which clusters are the most stable when $k$ is changed from 8 to 12? (Look at the "Stability" tab)
+* __연습 2__: $k$가 8에서 12로 변경될 때 어떤 클러스터가 가장 안정적입니까? ("안정성" 탭 참조)
 
-* __Exercise 3__: Check out differentially expressed genes and marker genes for the obtained clusterings. Please use $k=10$.
+* __연습 3__: 얻은 클러스터링에 대한 차등 발현 유전자 및 마커 유전자를 확인합니다. $k=10$을 사용하십시오.
 
-* __Exercise 4__: Change the marker genes threshold (the default is 0.85). Does __SC3__ find more marker genes?
+* __연습 4__: 마커 유전자 임계값을 변경합니다(기본값은 0.85). __SC3__가 더 많은 마커 유전자를 찾습니까?
 
 ### tSNE + kmeans
 
-[tSNE](https://lvdmaaten.github.io/tsne/) plots that we saw before (\@ref(exprs-over8)) when used the __scater__ package are made by using the [Rtsne](https://cran.r-project.org/web/packages/Rtsne/index.html) and [ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html) packages. Here we will do the same:
-```{r clustering15, fig.cap = "tSNE map of the patient data"}
+이전에 본 [tSNE](https://lvdmaaten.github.io/tsne/) 플롯(\@ref(exprs-over8))은 __scater__ 패키지를 사용할 때 [Rtsne](https://cran.r-project.org/web/packages/Rtsne/index.html) 및 [ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html) 패키지를 사용하여 만들어졌습니다. 여기서도 동일한 작업을 수행합니다.
+```{r clustering15, fig.cap = "환자 데이터의 tSNE 맵"}
 deng <- runTSNE(deng, rand_seed = 1)
 plotTSNE(deng)
 ```
 
-Note that all points on the plot above are black. This is different from what we saw before, when the cells were coloured based on the annotation. Here we do not have any annotation and all cells come from the same batch, therefore all dots are black.
+위 플롯의 모든 점이 검은색이라는 점에 유의하십시오. 이것은 세포가 주석에 따라 색칠되었을 때 이전에 본 것과 다릅니다. 여기에는 주석이 없으며 모든 세포가 동일한 배치에서 나왔으므로 모든 점이 검은색입니다.
 
-Now we are going to apply _k_-means clustering algorithm to the cloud of points on the tSNE map. How many groups do you see in the cloud?
+이제 tSNE 맵의 점 구름에 _k_-평균 클러스터링 알고리즘을 적용할 것입니다. 구름에서 몇 개의 그룹을 볼 수 있습니까?
 
-We will start with $k=8$:
-```{r clustering16, fig.cap = "tSNE map of the patient data with 8 colored clusters, identified by the k-means clustering algorithm"}
+$k=8$부터 시작하겠습니다.
+```{r clustering16, fig.cap = "k-평균 클러스터링 알고리즘으로 식별된 8개의 색상 클러스터가 있는 환자 데이터의 tSNE 맵"}
 colData(deng)$tSNE_kmeans <- as.character(kmeans(reducedDim(deng, "TSNE"), centers = 8)$clust)
 plotTSNE(deng, colour_by = "tSNE_kmeans")
 ```
 
-__Exercise 7__: Make the same plot for $k=10$.
+__연습 7__: $k=10$에 대해 동일한 플롯을 만듭니다.
 
-__Exercise 8__: Compare the results between `tSNE+kmeans` and the original publication cell types. Can the results be improved by changing the `perplexity` parameter?
+__연습 8__: `tSNE+kmeans`와 원래 간행물 세포 유형 간의 결과를 비교합니다. `perplexity` 매개변수를 변경하여 결과를 개선할 수 있습니까?
 
-__Our solution__:
+__우리의 해결책__:
 ```{r clustering17, echo=FALSE}
 colData(deng)$tSNE_kmeans <- as.character(kmeans(reducedDim(deng, "TSNE"), centers = 10)$clust)
 adjustedRandIndex(colData(deng)$cell_type2, colData(deng)$tSNE_kmeans)
 ```
 
-As you may have noticed, `tSNE+kmeans` is stochastic and gives different results every time they are run. To get a better overview of the solutions, we need to run the methods multiple times. `SC3` is also stochastic, but thanks to the consensus step, it is more robust and less likely to produce different outcomes.
+눈치채셨겠지만, `tSNE+kmeans`는 확률적이며 실행할 때마다 다른 결과를 제공합니다. 솔루션에 대한 더 나은 개요를 얻으려면 방법을 여러 번 실행해야 합니다. `SC3`도 확률적이지만 컨센서스 단계 덕분에 더 견고하고 다른 결과를 생성할 가능성이 적습니다.
 
 ### SINCERA
 
-As mentioned in the previous chapter [SINCERA](https://research.cchmc.org/pbge/sincera.html) is based on hierarchical clustering. One important thing to keep in mind is that it performs a gene-level z-score transformation before doing clustering:
+이전 장에서 언급했듯이 [SINCERA](https://research.cchmc.org/pbge/sincera.html)는 계층적 클러스터링을 기반으로 합니다. 명심해야 할 한 가지 중요한 점은 클러스터링을 수행하기 전에 유전자 수준 z-점수 변환을 수행한다는 것입니다.
 
 ```{r clustering18}
-# use the same gene filter as in SC3
+# SC3와 동일한 유전자 필터 사용
 input <- logcounts(deng[rowData(deng)$sc3_gene_filter, ])
 ```
 
 ```{r clustering19, echo=TRUE, fig.height=7, fig.width=7}
-# perform gene-by-gene per-sample z-score transformation
+# 유전자별 샘플별 z-점수 변환 수행
 dat <- apply(input, 1, function(y) scRNA.seq.funcs::z.transform.helper(y))
-# hierarchical clustering
+# 계층적 클러스터링
 dd <- as.dist((1 - cor(t(dat), method = "pearson"))/2)
 hc <- hclust(dd, method = "average")
 ```
 
-If the number of cluster is not known [SINCERA](https://research.cchmc.org/pbge/sincera.html) can identify __k__ as the minimum height of the hierarchical tree that generates no more than a specified number of singleton clusters (clusters containing only 1 cell): 
+클러스터 수를 모르는 경우 [SINCERA](https://research.cchmc.org/pbge/sincera.html)는 지정된 수의 단일 클러스터(1개의 셀만 포함하는 클러스터)를 생성하지 않는 계층적 트리의 최소 높이로 __k__를 식별할 수 있습니다.
 
 ```{r clustering20, echo=TRUE}
 num.singleton <- 0
@@ -279,9 +279,9 @@ for (i in 2:dim(dat)[2]) {
 cat(kk)
 ```
 
-Let's now visualize the SINCERA results as a heatmap:
+이제 SINCERA 결과를 히트맵으로 시각화해 보겠습니다.
 
-```{r clustering21, fig.cap = "Clustering solutions of SINCERA method using found $k$"}
+```{r clustering21, fig.cap = "찾은 $k$를 사용하여 SINCERA 방법의 클러스터링 솔루션"}
 pheatmap(
     t(dat),
     cluster_cols = hc,
@@ -291,22 +291,21 @@ pheatmap(
 )
 ```
 
-__Exercise 10__: Compare the results between `SINCERA` and the original publication cell types.
+__연습 10__: `SINCERA`와 원래 간행물 세포 유형 간의 결과를 비교합니다.
 
-__Our solution__:
+__우리의 해결책__:
 
 ```{r clustering22, echo=FALSE}
 colData(deng)$SINCERA <- as.character(cutree(hc, k = kk))
 adjustedRandIndex(colData(deng)$cell_type2, colData(deng)$SINCERA)
 ```
 
-__Exercise 11__: Is using the singleton cluster criteria for finding __k__ a good idea?
+__연습 11__: __k__를 찾는 데 단일 클러스터 기준을 사용하는 것이 좋은 생각입니까?
 
 ### sessionInfo()
 
-<details><summary>View session info</summary>
+<details><summary>세션 정보 보기</summary>
 ```{r echo=FALSE}
 sessionInfo()
 ```
 </details>
-

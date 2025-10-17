@@ -2,9 +2,9 @@
 output: html_document
 ---
 
-## Normalization Theory
+## 정규화 이론
 
-### Introduction
+### 소개
 
 ```{r exprs-norm0, echo=FALSE}
 library(scRNA.seq.funcs)
@@ -20,84 +20,84 @@ insert_fun('calc_cell_RLE')
 insert_fun('Down_Sample_Matrix')
 ```
 
-In the previous chapter we identified important confounding factors and explanatory variables. `scater` allows one to account for these variables in subsequent statistical models or to condition them out using `normaliseExprs()`, if so desired. This can be done by providing a design matrix to `normaliseExprs()`. We are not covering this topic here, but you can try to do it yourself as an exercise.
+이전 장에서는 중요한 교란 요인과 설명 변수를 식별했습니다. `scater`를 사용하면 후속 통계 모델에서 이러한 변수를 고려하거나 원하는 경우 `normaliseExprs()`를 사용하여 조건을 제거할 수 있습니다. 이는 `normaliseExprs()`에 설계 행렬을 제공하여 수행할 수 있습니다. 여기서는 이 주제를 다루지 않지만 연습으로 직접 시도해 볼 수 있습니다.
 
-Instead we will explore how simple size-factor normalisations correcting for library size can remove the effects of some of the confounders and explanatory variables.
+대신 라이브러리 크기를 보정하는 간단한 크기 인자 정규화가 일부 교란 요인 및 설명 변수의 영향을 어떻게 제거할 수 있는지 살펴보겠습니다.
 
-### Library Size
+### 라이브러리 크기
 
-Library sizes vary because scRNA-seq data is often sequenced on highly multiplexed platforms the total reads which are derived from each cell may differ substantially. Some quantification methods (eg. [`Cufflinks`](http://cole-trapnell-lab.github.io/cufflinks/), [`RSEM`](http://deweylab.github.io/RSEM/)) incorporated library size when determining gene expression estimates thus do not require this normalization.
+scRNA-seq 데이터는 종종 고도로 다중화된 플랫폼에서 시퀀싱되므로 각 세포에서 파생된 총 리드가 상당히 다를 수 있기 때문에 라이브러리 크기가 다양합니다. 일부 정량화 방법(예: [`Cufflinks`](http://cole-trapnell-lab.github.io/cufflinks/), [`RSEM`](http://deweylab.github.io/RSEM/))은 유전자 발현 추정치를 결정할 때 라이브러리 크기를 통합하므로 이 정규화가 필요하지 않습니다.
 
-However, if another quantification method was used then library size must be corrected for by multiplying or dividing each column of the expression matrix by a "normalization factor" which is an estimate of the library size relative to the other cells. Many methods to correct for library size have been developped for bulk RNA-seq and can be equally applied to scRNA-seq (eg. __UQ__, __SF__, __CPM__, __RPKM__, __FPKM__, __TPM__). 
+그러나 다른 정량화 방법이 사용된 경우 라이브러리 크기는 발현 행렬의 각 열을 다른 세포에 대한 라이브러리 크기의 추정치인 "정규화 인자"로 곱하거나 나누어 보정해야 합니다. 라이브러리 크기를 보정하는 많은 방법이 대량 RNA-seq에 대해 개발되었으며 scRNA-seq에도 동일하게 적용될 수 있습니다(예: __UQ__, __SF__, __CPM__, __RPKM__, __FPKM__, __TPM__).
 
 
-### Normalisations
+### 정규화
 
 #### CPM
 
-The simplest way to normalize this data is to convert it to counts per million (__CPM__) by dividing each column by its total then multiplying by 1,000,000. Note that spike-ins should be excluded from the calculation of total expression in order to correct for total cell RNA content, therefore we will only use endogenous genes. Example of a __CPM__ function in `R`:
+이 데이터를 정규화하는 가장 간단한 방법은 각 열을 총계로 나눈 다음 1,000,000을 곱하여 백만 분의 카운트(__CPM__)로 변환하는 것입니다. 스파이크인은 총 세포 RNA 함량을 보정하기 위해 총 발현 계산에서 제외해야 하므로 내인성 유전자만 사용할 것입니다. `R`의 __CPM__ 함수 예:
 
 ```{r exprs-norm1, eval=FALSE}
 
 ```
 
-One potential drawback of __CPM__ is if your sample contains genes that are both very highly expressed and differentially expressed across the cells. In this case, the total molecules in the cell may depend of whether such genes are on/off in the cell and normalizing by total molecules may hide the differential expression of those genes and/or falsely create differential expression for the remaining genes. 
+__CPM__의 한 가지 잠재적인 단점은 샘플에 매우 높게 발현되고 세포 전체에서 차등적으로 발현되는 유전자가 포함되어 있는 경우입니다. 이 경우 세포의 총 분자는 이러한 유전자가 세포에서 켜져 있는지/꺼져 있는지에 따라 달라질 수 있으며 총 분자로 정규화하면 해당 유전자의 차등 발현을 숨기거나 나머지 유전자에 대해 거짓으로 차등 발현을 생성할 수 있습니다.
 
-__Note__ __RPKM__, __FPKM__ and __TPM__ are variants on __CPM__ which further adjust counts by the length of the respective gene/transcript.
+__참고__ __RPKM__, __FPKM__ 및 __TPM__은 각 유전자/전사체의 길이로 카운트를 추가로 조정하는 __CPM__의 변형입니다.
 
-To deal with this potentiality several other measures were devised.
+이러한 잠재력을 다루기 위해 몇 가지 다른 측정값이 고안되었습니다.
 
-#### Relative Log Expression (RLE)
+#### 상대 로그 발현(RLE)
 
-The __size factor (SF)__ was proposed and popularized by DESeq [@Anders2010-jr]. First the geometric mean of each gene across all cells is calculated. The size factor for each cell is the median across genes of the ratio of the expression to the gene's geometric mean. A drawback to this method is that since it uses the geometric mean only genes with non-zero expression values across all cells can be used in its calculation, making it unadvisable for large low-depth scRNA-seq experiments. `edgeR` & `scater` call this method __RLE__ for "relative log expression". Example of a __SF__ function in `R`:
+__크기 인자(SF)__는 DESeq[@Anders2010-jr]에 의해 제안되고 대중화되었습니다. 먼저 모든 세포에 대한 각 유전자의 기하 평균이 계산됩니다. 각 세포의 크기 인자는 유전자의 기하 평균에 대한 발현 비율의 유전자 간 중앙값입니다. 이 방법의 단점은 기하 평균을 사용하기 때문에 모든 세포에서 0이 아닌 발현 값을 가진 유전자만 계산에 사용할 수 있으므로 대규모 저심도 scRNA-seq 실험에는 권장되지 않는다는 것입니다. `edgeR` 및 `scater`는 이 방법을 "상대 로그 발현"에 대해 __RLE__라고 부릅니다. `R`의 __SF__ 함수 예:
 
 ```{r exprs-norm2, eval=FALSE}
 
 ```
 
-#### Upper Quartile (UQ) Normalization
+#### 상위 사분위수(UQ) 정규화
 
-The __upperquartile (UQ)__ was proposed by [@Bullard2010-eb]. Here each column is divided by the 75% quantile of the counts for each library. Often the calculated quantile is scaled by the median across cells to keep the absolute level of expression relatively consistent. A drawback to this method is that for low-depth scRNA-seq experiments the large number of undetected genes may result in the 75% quantile being zero (or close to it). This limitation can be overcome by generalizing the idea and using a higher quantile (eg. the 99% quantile is the default in `scater`) or by excluding zeros prior to calculating the 75% quantile. Example of a __UQ__ function in `R`:
+__상위 사분위수(UQ)__는 [@Bullard2010-eb]에 의해 제안되었습니다. 여기서 각 열은 각 라이브러리에 대한 카운트의 75% 분위수로 나뉩니다. 종종 계산된 분위수는 발현의 절대 수준을 비교적 일관되게 유지하기 위해 세포 전체의 중앙값으로 조정됩니다. 이 방법의 단점은 저심도 scRNA-seq 실험의 경우 검출되지 않은 유전자의 수가 많아 75% 분위수가 0(또는 그에 가까움)이 될 수 있다는 것입니다. 이 제한은 아이디어를 일반화하고 더 높은 분위수(예: `scater`에서는 99% 분위수가 기본값임)를 사용하거나 75% 분위수를 계산하기 전에 0을 제외하여 극복할 수 있습니다. `R`의 __UQ__ 함수 예:
 
 ```{r exprs-norm3, eval=FALSE}
 
 ```
 
-#### Trimmed Mean of M-values (TMM)
+#### M-값의 트리밍된 평균(TMM)
 
-Another method is called __TMM__ is the weighted trimmed mean of M-values (to the reference) proposed by [@Robinson2010-hz]. The M-values in question are the gene-wise log2 fold changes between individual cells. One cell is used as the reference then the M-values for each other cell is calculated compared  to this reference. These values are then trimmed by removing the top and bottom ~30%, and the average of the remaining values is calculated by weighting them to account for the effect of the log scale on variance. Each non-reference cell is multiplied by the calculated factor. Two potential issues with this method are insufficient non-zero genes left after trimming, and the assumption that most genes are not differentially expressed.
+또 다른 방법은 [@Robinson2010-hz]에 의해 제안된 __TMM__이라고 하는 가중 트리밍된 M-값의 평균(참조에 대해)입니다. 문제의 M-값은 개별 세포 간의 유전자별 로그2 배수 변화입니다. 한 세포가 참조로 사용된 다음 다른 각 세포에 대한 M-값이 이 참조와 비교하여 계산됩니다. 그런 다음 이러한 값은 상위 및 하위 ~30%를 제거하여 트리밍되고 나머지 값의 평균은 로그 척도가 분산에 미치는 영향을 고려하여 가중치를 부여하여 계산됩니다. 각 비참조 세포는 계산된 인자로 곱해집니다. 이 방법의 두 가지 잠재적인 문제는 트리밍 후 남은 0이 아닌 유전자가 충분하지 않다는 것과 대부분의 유전자가 차등적으로 발현되지 않는다는 가정입니다.
 
 #### scran
 
-`scran` package implements a variant on __CPM__ specialized for single-cell data [@L_Lun2016-pq]. Briefly, this method deals with the problem of vary large numbers of zero values per cell by pooling cells together calculating a normalization factor (similar to __CPM__) for the sum of each pool. Since each cell is found in many different pools, cell-specific factors can be deconvoluted from the collection of pool-specific factors using linear algebraic methods. 
+`scran` 패키지는 단일 세포 데이터에 특화된 __CPM__의 변형을 구현합니다[@L_Lun2016-pq]. 간단히 말해서, 이 방법은 세포를 함께 풀링하여 각 풀의 합계에 대한 정규화 인자( __CPM__와 유사)를 계산하여 세포당 매우 많은 수의 0 값 문제를 처리합니다. 각 세포는 많은 다른 풀에서 발견되므로 세포 특이적 인자는 선형 대수 방법을 사용하여 풀 특이적 인자 모음에서 분리될 수 있습니다.
 
-#### Downsampling
+#### 다운샘플링
 
-Finally, a simple way to correct for library size is to downsample the expression matrix so that each cell has approximately the same total number of molecules. The benefit of this method is that zero values will be introduced by the downsampling, thus eliminating any biases due to differing numbers of detected genes. However, the major drawback is that the process is not-deterministic, so each time the downsampling is run the resulting expression matrix is slightly different. Thus, often analyses must be run on multiple downsamplings to ensure results are robust. Example of a __downsampling__ function in `R`:
+마지막으로, 라이브러리 크기를 보정하는 간단한 방법은 각 세포가 거의 동일한 총 분자 수를 갖도록 발현 행렬을 다운샘플링하는 것입니다. 이 방법의 이점은 다운샘플링에 의해 0 값이 도입되어 검출된 유전자 수의 차이로 인한 편향을 제거한다는 것입니다. 그러나 주요 단점은 프로세스가 결정적이지 않다는 것입니다. 따라서 다운샘플링이 실행될 때마다 결과 발현 행렬이 약간 다릅니다. 따라서 종종 결과가 견고한지 확인하기 위해 여러 다운샘플링에서 분석을 실행해야 합니다. `R`의 __다운샘플링__ 함수 예:
 
 ```{r exprs-norm4, eval=FALSE}
 
 ```
 
-### Effectiveness
+### 효과
 
-To compare the efficiency of different normalization methods we will use visual inspection of `PCA` plots and calculation of cell-wise _relative log expression_ via `scater`'s `plotRLE()` function. Namely, cells with many (few) reads have higher (lower) than median expression for most genes resulting in a positive (negative) _RLE_ across the cell, whereas normalized cells have an _RLE_ close to zero. Example of a _RLE_ function in `R`:
+다른 정규화 방법의 효율성을 비교하기 위해 `PCA` 플롯의 시각적 검사와 `scater`의 `plotRLE()` 함수를 통한 세포별 _상대 로그 발현_ 계산을 사용할 것입니다. 즉, 많은(적은) 리드를 가진 세포는 대부분의 유전자에 대해 중앙값보다 높은(낮은) 발현을 가지므로 세포 전체에서 양의(음의) _RLE_가 발생하고, 정규화된 세포는 0에 가까운 _RLE_를 갖습니다. `R`의 _RLE_ 함수 예:
 
 ```{r exprs-norm5, eval=FALSE}
 
 ```
 
-__Note__ The __RLE__, __TMM__, and __UQ__ size-factor methods were developed for bulk RNA-seq data and, depending on the experimental context, may not be appropriate for single-cell RNA-seq data, as their underlying assumptions may be problematically violated. 
+__참고__ __RLE__, __TMM__ 및 __UQ__ 크기 인자 방법은 대량 RNA-seq 데이터를 위해 개발되었으며 실험적 맥락에 따라 기본 가정이 문제가 될 수 있으므로 단일 세포 RNA-seq 데이터에 적합하지 않을 수 있습니다.
 
-__Note__ `scater` acts as a wrapper for the `calcNormFactors` function from `edgeR` which implements several library size normalization methods making it easy to apply any of these methods to our data.
+__참고__ `scater`는 `edgeR`의 `calcNormFactors` 함수에 대한 래퍼 역할을 하며 여러 라이브러리 크기 정규화 방법을 구현하여 이러한 방법 중 하나를 데이터에 쉽게 적용할 수 있도록 합니다.
 
-__Note__ `edgeR` makes extra adjustments to some of the normalization methods which may result in somewhat different results than if the original methods are followed exactly, e.g. edgeR's and scater's "RLE" method which is based on the "size factor" used by [DESeq](http://bioconductor.org/packages/DESeq) may give different results to the `estimateSizeFactorsForMatrix` method in the `DESeq`/`DESeq2` packages. In addition, some versions of `edgeR` will not calculate the normalization factors correctly unless `lib.size` is set at 1 for all cells.
+__참고__ `edgeR`는 일부 정규화 방법에 추가 조정을 가하여 원래 방법을 정확하게 따르는 것과 다소 다른 결과를 초래할 수 있습니다. 예를 들어, [DESeq](http://bioconductor.org/packages/DESeq)에서 사용하는 "크기 인자"를 기반으로 하는 edgeR 및 scater의 "RLE" 방법은 `DESeq`/`DESeq2` 패키지의 `estimateSizeFactorsForMatrix` 방법과 다른 결과를 줄 수 있습니다. 또한 일부 버전의 `edgeR`는 모든 세포에 대해 `lib.size`가 1로 설정되지 않으면 정규화 인자를 올바르게 계산하지 않습니다.
 
-__Note__ For __CPM__ normalisation we use `scater`'s `calculateCPM()` function. For __RLE__, __UQ__ and __TMM__ we used to use `scater`'s `normaliseExprs()` function (it is deprecated now and therefore we removed the corresponding subchapters). For __scran__ we use `scran` package to calculate size factors (it also operates on `SingleCellExperiment` class) and `scater`'s `normalize()` to normalise the data. All these normalization functions save the results to the `logcounts` slot of the `SCE` object. For __downsampling__ we use our own functions shown above.
+__참고__ __CPM__ 정규화에는 `scater`의 `calculateCPM()` 함수를 사용합니다. __RLE__, __UQ__ 및 __TMM__의 경우 `scater`의 `normaliseExprs()` 함수를 사용했습니다(현재는 더 이상 사용되지 않으므로 해당 하위 장을 제거했습니다). __scran__의 경우 `scran` 패키지를 사용하여 크기 인자를 계산하고(`SingleCellExperiment` 클래스에서도 작동) `scater`의 `normalize()`를 사용하여 데이터를 정규화합니다. 이러한 모든 정규화 함수는 결과를 `SCE` 객체의 `logcounts` 슬롯에 저장합니다. __다운샘플링__의 경우 위에서 보여준 자체 함수를 사용합니다.
 
-## Normalization Practice
+## 정규화 실습
 
-We will continue to work with the `tung` data that was used in the previous chapter.
+이전 장에서 사용된 `tung` 데이터로 계속 작업할 것입니다.
 
 ```{r exprs-norm6, message=FALSE, warning=FALSE}
 library(scRNA.seq.funcs)
@@ -109,84 +109,84 @@ umi <- readRDS("data/tung/umi.rds")
 umi.qc <- umi[! rowData(umi)$discard, ! colData(umi)$discard]
 ```
 
-### PCA on `logcounts_raw` data
+### `logcounts_raw` 데이터에 대한 PCA
 
-Log transformation makes the data group intuitively (e.g., by individual). However, there is clear dependency on the sequencing depth. 
+로그 변환은 데이터를 직관적으로 그룹화합니다(예: 개인별). 그러나 시퀀싱 깊이에 대한 명확한 의존성이 있습니다.
 
-```{r exprs-norm7, fig.cap = "PCA plot of the Tung data (logcounts raw)"}
+```{r exprs-norm7, fig.cap = "Tung 데이터의 PCA 플롯(logcounts raw)"}
 umi.qc <- runPCA(umi.qc, exprs_values = "logcounts_raw")
 plotPCA(umi.qc, colour_by = "batch", size_by = "detected", shape_by = "individual")
 ```
 
-### PCA on CPM-normalized data
+### CPM 정규화 데이터에 대한 PCA
 
-For future exercises, note that assay named `logcounts` is the default for most plotting and dimensionality reduction functions. We shall populate it with various normalizations and compare the results. The `logcounts` assay and `PCA` reducedDim objects are replaced every time we re-do normalization or `runPCA`. 
+향후 연습을 위해 `logcounts`라는 이름의 분석이 대부분의 플로팅 및 차원 축소 함수의 기본값이라는 점에 유의하십시오. 다양한 정규화를 채우고 결과를 비교할 것입니다. `logcounts` 분석 및 `PCA` reducedDim 객체는 정규화 또는 `runPCA`를 다시 수행할 때마다 교체됩니다.
 
-```{r exprs-norm8, fig.cap = "PCA plot of the tung data after CPM normalisation"}
+```{r exprs-norm8, fig.cap = "CPM 정규화 후 tung 데이터의 PCA 플롯"}
 logcounts(umi.qc) <- log2(calculateCPM(umi.qc) + 1)
 umi.qc <- runPCA(umi.qc)
 plotPCA(umi.qc, colour_by = "batch", size_by = "detected", shape_by = "individual")
 ```
 
-A [relative log expression](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0191629) (RLE) plots can be very useful assessing whether normalization procedure was successful.
+[상대 로그 발현](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0191629)(RLE) 플롯은 정규화 절차가 성공적이었는지 평가하는 데 매우 유용할 수 있습니다.
 
-```{r exprs-norm9, fig.cap = "Cell-wise RLE for logcounts-raw and log2-transformed CPM counts"}
-plotRLE(umi.qc, exprs_values = "logcounts_raw",colour_by = "batch") + ggtitle("RLE plot for logcounts_raw")
-plotRLE(umi.qc, exprs_values = "logcounts",colour_by = "batch") + ggtitle("RLE plot for log2(CPM) counts")
+```{r exprs-norm9, fig.cap = "logcounts-raw 및 log2 변환 CPM 카운트에 대한 세포별 RLE"}
+plotRLE(umi.qc, exprs_values = "logcounts_raw",colour_by = "batch") + ggtitle("logcounts_raw에 대한 RLE 플롯")
+plotRLE(umi.qc, exprs_values = "logcounts",colour_by = "batch") + ggtitle("log2(CPM) 카운트에 대한 RLE 플롯")
 ```
 
-### PCA on `scran`-normalized Data
+### `scran` 정규화 데이터에 대한 PCA
 
-CPM-based and other similar library-wise scaling approaches assume that all cells contain similar amounts of RNA, and hence should produce similar UMI counts. This is not always true. The following method, available in `scran` and several other `bioconductoR` packages, uses clustering in order to make normalization. This is sometimes referred to as normalization by deconvolution. First, let's do a quick-and-dirty clustering. These clusters look conspicuously like our batches! 
+CPM 기반 및 기타 유사한 라이브러리별 스케일링 접근 방식은 모든 세포가 유사한 양의 RNA를 포함하고 따라서 유사한 UMI 카운트를 생성해야 한다고 가정합니다. 이것이 항상 사실인 것은 아닙니다. `scran` 및 기타 여러 `bioconductoR` 패키지에서 사용할 수 있는 다음 방법은 정규화를 위해 클러스터링을 사용합니다. 이것은 때때로 디콘볼루션에 의한 정규화라고도 합니다. 먼저 빠르고 간단한 클러스터링을 수행해 보겠습니다. 이러한 클러스터는 우리 배치와 눈에 띄게 유사해 보입니다!
 
 ```{r exprs-norm10}
 qclust <- quickCluster(umi.qc, min.size = 30)
 table(qclust)
 ```
 
-Next, let's compute the size factors using the clustering. The first function adds a column to `colData` named `sizeFactor`. These values are then used by `logNormCounts`. 
+다음으로 클러스터링을 사용하여 크기 인자를 계산해 보겠습니다. 첫 번째 함수는 `sizeFactor`라는 이름의 열을 `colData`에 추가합니다. 그런 다음 이러한 값은 `logNormCounts`에서 사용됩니다.
 
 ```{r}
 umi.qc <- computeSumFactors(umi.qc, clusters = qclust)
 umi.qc <- logNormCounts(umi.qc)
 ```
 
-We now can see much higher resolution of individual and replicate-based batches. 
+이제 개별 및 복제 기반 배치의 훨씬 더 높은 해상도를 볼 수 있습니다.
 
-```{r fig.cap = "PCA plot of the tung data after deconvolution-based (scran) normalisation"}
+```{r fig.cap = "디콘볼루션 기반(scran) 정규화 후 tung 데이터의 PCA 플롯"}
 umi.qc <- runPCA(umi.qc)
 plotPCA(umi.qc, colour_by = "batch",size_by = "detected", shape_by = "individual")
 ```
 
-RLE plots also displays a nicely regularized plot. 
+RLE 플롯은 또한 멋지게 정규화된 플롯을 표시합니다.
 
-```{r exprs-norm11, fig.cap = "Cell-wise RLE of the tung data"}
+```{r exprs-norm11, fig.cap = "tung 데이터의 세포별 RLE"}
 plotRLE(umi.qc, exprs_values = "logcounts",colour_by = "batch")
 ```
 
-Sometimes `scran` produces negative or zero size factors. These will completely distort the normalized expression matrix. We can check the size factors scran has computed like so:
+때때로 `scran`은 음수 또는 0의 크기 인자를 생성합니다. 이는 정규화된 발현 행렬을 완전히 왜곡합니다. scran이 계산한 크기 인자를 다음과 같이 확인할 수 있습니다.
 
 ```{r exprs-norm12}
 summary(sizeFactors(umi.qc))
 ```
 
-For this dataset all the size factors are well-behaved; we will use this normalization for further analysis. If you find `scran` has calculated negative size factors try increasing the cluster and pool sizes until they are all positive.
+이 데이터 세트의 경우 모든 크기 인자가 잘 작동합니다. 추가 분석을 위해 이 정규화를 사용할 것입니다. `scran`이 음수 크기 인자를 계산한 경우 클러스터 및 풀 크기를 모두 양수가 될 때까지 늘려 보십시오.
 
-### PCA with Downsampled Data
+### 다운샘플링된 데이터로 PCA
 
-```{r exprs-norm13, fig.cap = "PCA plot of the tung data after downsampling"}
+```{r exprs-norm13, fig.cap = "다운샘플링 후 tung 데이터의 PCA 플롯"}
 logcounts(umi.qc) <- log2(Down_Sample_Matrix(counts(umi.qc)) + 1)
 umi.qc <- runPCA(umi.qc)
 plotPCA(umi.qc,colour_by = "batch",size_by = "detected", shape_by = "individual")
 ```
 
-```{r exprs-norm14, fig.cap = "Cell-wise RLE of the tung data (normalization by downsampling)"}
+```{r exprs-norm14, fig.cap = "tung 데이터의 세포별 RLE(다운샘플링에 의한 정규화)"}
 plotRLE(umi.qc, exprs_values = "logcounts",colour_by = "batch")
 ```
 
 ### sessionInfo()
 
-<details><summary>View session info</summary>
+<details><summary>세션 정보 보기</summary>
 ```{r echo=FALSE}
 sessionInfo()
 ```

@@ -2,23 +2,23 @@
 output: html_document
 ---
 
-## Dealing with Confounders
+## 교란 요인 처리
 
-### Introduction
+### 소개
 
-In the previous chapter we normalized for library size, effectively removing it as a confounder. Now we will consider removing other less well-defined confounders from our data. Technical confounders (aka batch effects) can arise from difference in reagents, isolation methods, the lab/experimenter who performed the experiment, even which day or time of the day the experiment was performed. Accounting for technical confounders, and batch effects particularly, is a large topic that also involves principles of experimental design. Here we address approaches that can be taken to account for confounders when the experimental design is appropriate.
+이전 장에서는 라이브러리 크기를 정규화하여 교란 요인으로서 효과적으로 제거했습니다. 이제 데이터에서 다른 덜 잘 정의된 교란 요인을 제거하는 것을 고려할 것입니다. 기술적 교란 요인(일명 배치 효과)은 시약, 분리 방법, 실험을 수행한 실험실/실험자, 심지어 실험이 수행된 날짜나 시간의 차이에서 발생할 수 있습니다. 기술적 교란 요인, 특히 배치 효과를 설명하는 것은 실험 설계 원칙도 포함하는 큰 주제입니다. 여기서는 실험 설계가 적절할 때 교란 요인을 설명하기 위해 취할 수 있는 접근 방식을 다룹니다.
 
-Fundamentally, accounting for technical confounders involves identifying and, ideally, removing sources of variation in the expression data that are not related to (i.e. are confounding) the biological signal of interest. Various approaches exist, some of which use spike-in or housekeeping genes, and some of which use endogenous genes.
+근본적으로 기술적 교란 요인을 설명하는 것은 관심 있는 생물학적 신호와 관련이 없는(즉, 교란하는) 발현 데이터의 변동 원인을 식별하고 이상적으로는 제거하는 것을 포함합니다. 스파이크인 또는 하우스키핑 유전자를 사용하는 일부와 내인성 유전자를 사용하는 일부를 포함하여 다양한 접근 방식이 존재합니다.
 
-The use of spike-ins as control genes is appealing, since the same amount of ERCC (or other) spike-in was added to each cell in our experiment. In principle, all the variablity we observe for these genes is due to technical noise; whereas endogenous genes are affected by both technical noise and biological variability. Technical noise can be removed by fitting a model to the spike-ins and "substracting" this from the endogenous genes. There are several methods available based on this premise (eg. [BASiCS](https://github.com/catavallejos/BASiCS), [scLVM](https://github.com/PMBio/scLVM), [RUVg](http://bioconductor.org/packages/release/bioc/html/RUVSeq.html)); each using different noise models and different fitting procedures. Alternatively, one can identify genes which exhibit significant variation beyond technical noise (eg. Distance to median, [Highly variable genes](http://www.nature.com/nmeth/journal/v10/n11/full/nmeth.2645.html)). However, there are issues with the use of spike-ins for normalisation (particularly ERCCs, derived from bacterial sequences), including that their variability can, for various reasons, actually be *higher* than that of endogenous genes.
+대조 유전자로 스파이크인을 사용하는 것은 매력적입니다. 왜냐하면 우리 실험의 각 세포에 동일한 양의 ERCC(또는 기타) 스파이크인이 추가되었기 때문입니다. 원칙적으로 이러한 유전자에 대해 관찰하는 모든 변동성은 기술적 노이즈 때문입니다. 반면 내인성 유전자는 기술적 노이즈와 생물학적 변동성 모두에 영향을 받습니다. 기술적 노이즈는 스파이크인에 모델을 피팅하고 이것을 내인성 유전자에서 "빼서" 제거할 수 있습니다. 이 전제를 기반으로 여러 가지 방법이 있습니다(예: [BASiCS](https://github.com/catavallejos/BASiCS), [scLVM](https://github.com/PMBio/scLVM), [RUVg](http://bioconductor.org/packages/release/bioc/html/RUVSeq.html)). 각각 다른 노이즈 모델과 다른 피팅 절차를 사용합니다. 또는 기술적 노이즈를 넘어서는 상당한 변동을 보이는 유전자를 식별할 수 있습니다(예: 중앙값까지의 거리, [고변동 유전자](http://www.nature.com/nmeth/journal/v10/n11/full/nmeth.2645.html)). 그러나 정규화에 스파이크인을 사용하는 데에는 문제가 있습니다(특히 박테리아 서열에서 파생된 ERCC). 다양한 이유로 실제로 내인성 유전자보다 변동성이 *더 높을* 수 있다는 점을 포함합니다.
 
-Given the issues with using spike-ins, better results can often be obtained by using endogenous genes instead. Where we have a large number of endogenous genes that, on average, do not vary systematically between cells and where we expect technical effects to affect a large number of genes (a very common and reasonable assumption), then such methods (for example, the RUVs method) can perform well. 
+스파이크인 사용에 문제가 있다는 점을 감안할 때, 대신 내인성 유전자를 사용하면 종종 더 나은 결과를 얻을 수 있습니다. 평균적으로 세포 간에 체계적으로 변하지 않는 많은 수의 내인성 유전자가 있고 기술적 효과가 많은 유전자에 영향을 미칠 것으로 예상되는 경우(매우 일반적이고 합리적인 가정), 이러한 방법(예: RUVs 방법)은 잘 수행될 수 있습니다.
 
-There are two scenarios in scRNA-seq dataset integration. In the first scenario, cell composition is expected to be the same, and methods developed for bulk RNA-seq (e.g. ComBat) exhibit good performance. This is often true for biological replicates of the same experiment; this is also true for batches in `tung` dataset. In the second scenario, the overlap between the datasets is partial - e.g. if datasets represent healthy and diseased tissue, which differ in cell type composition substantially. In this case, mutual nearest neighbor (MNN)-based methods tend to perform much better. We will look at these
+scRNA-seq 데이터 세트 통합에는 두 가지 시나리오가 있습니다. 첫 번째 시나리오에서는 세포 구성이 동일할 것으로 예상되며, 대량 RNA-seq(예: ComBat)를 위해 개발된 방법이 좋은 성능을 보입니다. 이는 동일한 실험의 생물학적 복제에 대해 종종 사실입니다. 이는 `tung` 데이터 세트의 배치에 대해서도 사실입니다. 두 번째 시나리오에서는 데이터 세트 간의 중복이 부분적입니다. 예를 들어 데이터 세트가 세포 유형 구성이 상당히 다른 건강한 조직과 질병 조직을 나타내는 경우입니다. 이 경우 상호 최근접 이웃(MNN) 기반 방법이 훨씬 더 나은 성능을 보이는 경향이 있습니다. 우리는 이것들을 살펴볼 것입니다.
 
-Here, we will perform batch correction using two methods - `ComBat`, based on empirical Bayesian framework, and `fastMNN`, which is a MNN-based method from the package `batchelor`.
+여기서는 경험적 베이지안 프레임워크를 기반으로 하는 `ComBat`과 `batchelor` 패키지의 MNN 기반 방법인 `fastMNN`이라는 두 가지 방법을 사용하여 배치 보정을 수행합니다.
 
-### Load and Normalize the Tung Dataset
+### Tung 데이터 세트 로드 및 정규화
 
 ```{r remove-conf0, echo=FALSE}
 library(knitr)
@@ -35,7 +35,7 @@ library(kBET)
 set.seed(1234567)
 ```
 
-Let's read in the pre-processed dataset and normalize it using `logNormCounts` from `scran` package. In `umi.qc` object, a new assay named `logcounts` will appear, in addition to the previously present `counts` and `logcounts_raw`: 
+사전 처리된 데이터 세트를 읽고 `scran` 패키지의 `logNormCounts`를 사용하여 정규화해 보겠습니다. `umi.qc` 객체에서 이전에 존재했던 `counts` 및 `logcounts_raw` 외에 `logcounts`라는 새 분석이 나타납니다.
 
 ```{r remove-conf2}
 umi    <- readRDS("data/tung/umi.rds")
@@ -47,17 +47,17 @@ umi.qc <- logNormCounts(umi.qc)
 
 ### Combat
 
-If you have an experiment with a balanced design, `ComBat` can be used to eliminate batch effects while preserving biological effects by specifying the biological effects using the `mod` parameter. However the `Tung` data contains multiple experimental replicates rather than a balanced design so using `mod1` to preserve biological variability will result in an error. 
+균형 잡힌 설계의 실험이 있는 경우 `ComBat`을 사용하여 `mod` 매개변수를 사용하여 생물학적 효과를 지정하여 생물학적 효과를 보존하면서 배치 효과를 제거할 수 있습니다. 그러나 `Tung` 데이터에는 균형 잡힌 설계 대신 여러 실험적 복제가 포함되어 있으므로 `mod1`을 사용하여 생물학적 변동성을 보존하면 오류가 발생합니다.
 
 ```{r remove-conf5}
 assay(umi.qc, "combat") <- ComBat(logcounts(umi.qc),batch = umi.qc$replicate)
 ```
 
-__Exercise 1__
+__연습 1__
 
-Perform `ComBat` correction accounting for total features as a co-variate. Store the corrected matrix in the `combat_tf` slot.
+공변량으로 총 특징을 고려하여 `ComBat` 보정을 수행합니다. 보정된 행렬을 `combat_tf` 슬롯에 저장합니다.
 
-<details><summary>Answer</summary>
+<details><summary>답</summary>
 
 ```{r remove-conf6}
 assay(umi.qc, "combat_tf") <- ComBat(logcounts(umi.qc),batch = umi.qc$detected)
@@ -67,7 +67,7 @@ assay(umi.qc, "combat_tf") <- ComBat(logcounts(umi.qc),batch = umi.qc$detected)
 
 ### mnnCorrect (batchelor)
 
-MNN-based normalization is implemented as `fastMNN` function.
+MNN 기반 정규화는 `fastMNN` 함수로 구현됩니다.
 
 ```{r remove-conf7}
 mnn_out <- fastMNN(umi.qc,batch = umi.qc$replicate)
@@ -75,13 +75,13 @@ assay(umi.qc, "mnn") <- assay(mnn_out,'reconstructed')
 ```
 
 
-### Evaluation and Comparison of Batch-removal Approaches
+### 배치 제거 접근 방식의 평가 및 비교
 
-A key question when considering the different methods for removing confounders is how to quantitatively determine which one is the most effective. The main reason why comparisons are challenging is because it is often difficult to know what corresponds to technical counfounders and what is interesting biological variability. Here, we consider three different metrics which are all reasonable based on our knowledge of the experimental design. Depending on the biological question that you wish to address, it is important to choose a metric that allows you to evaluate the confounders that are likely to be the biggest concern for the given situation.
+교란 요인을 제거하는 다른 방법을 고려할 때 중요한 질문은 어떤 방법이 가장 효과적인지 정량적으로 결정하는 방법입니다. 비교가 어려운 주된 이유는 종종 기술적 교란 요인에 해당하는 것과 흥미로운 생물학적 변동성에 해당하는 것을 알기 어렵기 때문입니다. 여기서는 실험 설계에 대한 지식을 기반으로 모두 합리적인 세 가지 다른 메트릭을 고려합니다. 해결하려는 생물학적 질문에 따라 주어진 상황에 대해 가장 큰 우려가 될 가능성이 있는 교란 요인을 평가할 수 있는 메트릭을 선택하는 것이 중요합니다.
 
-#### Effectiveness 1
+#### 효과 1
 
-We evaluate the effectiveness of the normalization by inspecting the PCA plot where colour corresponds the technical replicates and shape corresponds to different biological samples (individuals). Separation of biological samples and interspersed batches indicates that technical variation has been removed. We always use log2-cpm normalized data to match the assumptions of PCA.
+기술적 복제에 해당하는 색상과 다른 생물학적 샘플(개체)에 해당하는 모양의 PCA 플롯을 검사하여 정규화의 효과를 평가합니다. 생물학적 샘플의 분리와 산재된 배치는 기술적 변동이 제거되었음을 나타냅니다. PCA의 가정을 맞추기 위해 항상 log2-cpm 정규화된 데이터를 사용합니다.
 
 ```{r remove-conf11}
 for(n in assayNames(umi.qc)) {
@@ -99,9 +99,9 @@ for(n in assayNames(umi.qc)) {
 }
 ```
 
-#### Effectiveness 2
+#### 효과 2
 
-We can also examine the effectiveness of correction using the relative log expression (RLE) across cells to confirm technical noise has been removed from the dataset. Note RLE only evaluates whether the number of genes higher and lower than average are equal for each cell - i.e. systemic technical effects. Random technical noise between batches may not be detected by RLE.
+또한 세포 전체의 상대 로그 발현(RLE)을 검사하여 기술적 노이즈가 데이터 세트에서 제거되었는지 확인하여 보정의 효과를 검사할 수 있습니다. RLE는 평균보다 높고 낮은 유전자의 수가 각 세포에 대해 동일한지 여부, 즉 전신적인 기술적 효과만 평가합니다. 배치 간의 무작위 기술적 노이즈는 RLE로 감지되지 않을 수 있습니다.
 
 ```{r remove-conf12}
 
@@ -113,17 +113,17 @@ par(mar=c(6,4,1,1))
 boxplot(res, las=2)
 ```
 
-#### Effectiveness 3
+#### 효과 3
 
-Another method to check the efficacy of batch-effect correction is to consider the intermingling of points from different batches in local subsamples of the data. If there are no batch-effects then proportion of cells from each batch in any local region should be equal to the global proportion of cells in each batch. 
+배치 효과 보정의 효능을 확인하는 또 다른 방법은 데이터의 로컬 하위 샘플에서 다른 배치의 점이 혼합되는 것을 고려하는 것입니다. 배치 효과가 없는 경우 모든 로컬 영역에서 각 배치의 세포 비율은 각 배치의 세포의 전역 비율과 같아야 합니다.
 
-`kBET` [@Buttner2017-ds] takes `kNN` networks around random cells and tests the number of cells from each batch against a binomial distribution. The rejection rate of these tests indicates the severity of batch-effects still present in the data (high rejection rate = strong batch effects). `kBET` assumes each batch contains the same complement of biological groups, thus it can only be applied to the entire dataset if a perfectly balanced design has been used. However, `kBET` can also be applied to replicate-data if it is applied to each biological group separately. In the case of the Tung data, we will apply `kBET` to each individual independently to check for residual batch effects. However, this method will not identify residual batch-effects which are confounded with biological conditions. In addition, `kBET` does not determine if biological signal has been preserved. 
+`kBET` [@Buttner2017-ds]는 무작위 세포 주위의 `kNN` 네트워크를 취하고 각 배치의 세포 수를 이항 분포에 대해 테스트합니다. 이러한 테스트의 기각률은 데이터에 여전히 존재하는 배치 효과의 심각도를 나타냅니다(높은 기각률 = 강한 배치 효과). `kBET`는 각 배치에 동일한 생물학적 그룹 보완이 포함되어 있다고 가정하므로 완벽하게 균형 잡힌 설계가 사용된 경우에만 전체 데이터 세트에 적용할 수 있습니다. 그러나 `kBET`는 각 생물학적 그룹에 별도로 적용되는 경우 복제 데이터에도 적용할 수 있습니다. Tung 데이터의 경우 각 개인에게 독립적으로 `kBET`를 적용하여 잔여 배치 효과를 확인합니다. 그러나 이 방법은 생물학적 조건과 혼동되는 잔여 배치 효과를 식별하지 않습니다. 또한 `kBET`는 생물학적 신호가 보존되었는지 여부를 결정하지 않습니다.
 
 ```{r remove-conf13, message = FALSE, warning = FALSE}
 compare_kBET_results <- function(sce){
     sce <- umi.qc
     indiv <- unique(as.character(sce$individual))
-    norms <- assayNames(sce) # Get all normalizations
+    norms <- assayNames(sce) # 모든 정규화 가져오기
     results <- list()
     for (i in indiv){ 
         for (j in norms){
@@ -144,12 +144,12 @@ eff_debatching <- compare_kBET_results(umi.qc)
 eff_debatching
 ```
 
-Finally, let's visualize the output of kBET calculation:
+마지막으로 kBET 계산의 출력을 시각화해 보겠습니다.
 
 ```{r remove-conf14, message = FALSE}
 library("reshape2")
 library("RColorBrewer")
-# Plot results
+# 결과 플로팅
 dod <- melt(as.matrix(eff_debatching),  value.name = "kBET")
 colnames(dod)[1:2] <- c("Normalisation", "Individual")
 
@@ -173,14 +173,13 @@ ggplot(dod, aes(Normalisation, Individual, fill=kBET)) +
             hjust = 1
         )
     ) + 
-    ggtitle("Effect of batch regression methods per individual")
+    ggtitle("개인별 배치 회귀 방법의 효과")
 ```
 
 ### sessionInfo()
 
-<details><summary>View session info</summary>
+<details><summary>세션 정보 보기</summary>
 ```{r echo=FALSE}
 sessionInfo()
 ```
 </details>
-
